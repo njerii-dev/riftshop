@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 
+// Force dynamic rendering - this page needs database access at runtime
+export const dynamic = 'force-dynamic';
+
 export default async function Marketplace() {
   // Fetch products from database
   const products = await prisma.product.findMany({

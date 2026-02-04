@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
+// Force dynamic rendering - this page needs database access at runtime
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboard() {
   // Fetch stats from database
   const userCount = await prisma.user.count();
