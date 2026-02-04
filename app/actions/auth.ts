@@ -6,17 +6,19 @@ import { redirect } from "next/navigation"
 export async function registerUser(formData: FormData) {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
-  const role = formData.get("role") as any // ADMIN, SELLER, or CUSTOMER
+  const role = formData.get("role") as any
 
-  // 1. Save the user to Neon via Prisma
+  if (!email || !password) return;
+
+  // Save to Neon
   await prisma.user.create({
     data: {
       email,
-      password, // Note: In a real app, we would hash this!
+      password, // Note: In production, we'd hash this!
       role,
     },
   })
 
-  // 2. Send them to the login page once they are registered
+  // After signing up, send them to login
   redirect("/login")
 }
