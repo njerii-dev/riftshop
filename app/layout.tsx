@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-// This is the import line that connects your Navbar to the layout
 import Navbar from "../components/Navbar";
 
 const geistSans = Geist({
@@ -16,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Riftshop | Modern Marketplace",
-  description: "Your one-stop shop for everything",
+  title: "Riftshop | Premium Marketplace",
+  description: "Discover unique products from sellers around the world. Buy and sell with confidence on Riftshop.",
+  keywords: ["marketplace", "ecommerce", "buy", "sell", "products"],
 };
 
 export default function RootLayout({
@@ -26,13 +25,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* We place the Navbar here so it appears at the top of every page */}
         <Navbar />
-        
-        {/* The {children} represents whatever page you are currently viewing */}
-        <main className="min-h-screen bg-gray-50">
+        <main>
           {children}
         </main>
       </body>
