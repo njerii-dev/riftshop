@@ -172,16 +172,6 @@ export default function RegisterPage() {
               )}
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-white/20"></div>
-            <span className="text-gray-400 text-sm">or continue with</span>
-            <div className="flex-1 h-px bg-white/20"></div>
-          </div>
-
-          {/* Social Login */}
-
           <p className="text-center text-gray-400 mt-6">
             Already have an account?{" "}
             <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
