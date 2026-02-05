@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import BuyButton from "@/components/BuyButton";
 
 // Force dynamic rendering - this page needs database access at runtime
 export const dynamic = 'force-dynamic';
@@ -122,11 +123,11 @@ export default async function Marketplace() {
                           ${product.price.toFixed(2)}
                         </span>
                       </div>
-                      <button className="p-2 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-500 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </button>
+                      <BuyButton
+                        productId={product.id}
+                        productName={product.name}
+                        price={product.price}
+                      />
                     </div>
                     <div className="mt-4 pt-4 border-t border-border flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold">
