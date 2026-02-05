@@ -46,10 +46,32 @@ export async function registerUser(formData: FormData) {
   redirect("/login")
 }
 
-export async function loginUser(formData: FormData) {
+export async function loginUser(formData: FormData): Promise<{ error?: string; redirectTo?: string }> {
   const email = formData.get("email") as string
   const password = formData.get("password") as string
 
+  if (!email || !password) {
+    return { error: "Email and password are required" }
+  }
+
+  // First verify the credentials manually
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, password: true, role: true },
+  })
+
+  if (!user) {
+    return { error: "Invalid email or password" }
+  }
+
+  const bcrypt = await import("bcryptjs")
+  const passwordMatch = await bcrypt.compare(password, user.password)
+
+  if (!passwordMatch) {
+    return { error: "Invalid email or password" }
+  }
+
+  // Now sign in - credentials are verified
   try {
     await signIn("credentials", {
       email,
@@ -60,29 +82,24 @@ export async function loginUser(formData: FormData) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          throw new Error("Invalid email or password")
+          return { error: "Invalid email or password" }
         default:
-          throw new Error("Something went wrong")
+          return { error: "Something went wrong" }
       }
     }
+    // Re-throw non-auth errors (like NEXT_REDIRECT)
     throw error
   }
 
-  // Get the user to determine redirect
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: { role: true },
-  })
-
-  // Redirect based on role
-  switch (user?.role) {
+  // Determine redirect based on role
+  switch (user.role) {
     case "ADMIN":
-      redirect("/dashboard")
+      return { redirectTo: "/dashboard" }
     case "SELLER":
-      redirect("/manage-products")
+      return { redirectTo: "/manage-products" }
     case "CUSTOMER":
     default:
-      redirect("/profile")
+      return { redirectTo: "/profile" }
   }
 }
 

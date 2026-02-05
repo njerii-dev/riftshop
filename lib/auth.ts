@@ -6,6 +6,7 @@ import { prisma } from "./prisma"
 export type UserRole = "ADMIN" | "SELLER" | "CUSTOMER"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    trustHost: true,
     providers: [
         Credentials({
             name: "credentials",
@@ -14,31 +15,36 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) {
-                    throw new Error("Email and password required")
-                }
+                try {
+                    if (!credentials?.email || !credentials?.password) {
+                        return null
+                    }
 
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email as string },
-                })
+                    const user = await prisma.user.findUnique({
+                        where: { email: credentials.email as string },
+                    })
 
-                if (!user) {
-                    throw new Error("Invalid credentials")
-                }
+                    if (!user) {
+                        return null
+                    }
 
-                const passwordMatch = await bcrypt.compare(
-                    credentials.password as string,
-                    user.password
-                )
+                    const passwordMatch = await bcrypt.compare(
+                        credentials.password as string,
+                        user.password
+                    )
 
-                if (!passwordMatch) {
-                    throw new Error("Invalid credentials")
-                }
+                    if (!passwordMatch) {
+                        return null
+                    }
 
-                return {
-                    id: user.id,
-                    email: user.email,
-                    role: user.role,
+                    return {
+                        id: user.id,
+                        email: user.email,
+                        role: user.role,
+                    }
+                } catch (error) {
+                    console.error("Auth error:", error)
+                    return null
                 }
             },
         }),

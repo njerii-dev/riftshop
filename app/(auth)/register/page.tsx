@@ -1,7 +1,39 @@
+"use client";
+
 import { registerUser } from "@/app/actions/auth";
 import Link from "next/link";
+import { useActionState } from "react";
+import { useEffect, useState } from "react";
+
+// Wrapper function that returns error state instead of throwing
+async function registerAction(prevState: { error: string | null }, formData: FormData) {
+  try {
+    await registerUser(formData);
+    return { error: null };
+  } catch (error) {
+    if (error instanceof Error) {
+      // Check if it's a redirect (Next.js throws NEXT_REDIRECT)
+      if (error.message === "NEXT_REDIRECT") {
+        throw error;
+      }
+      return { error: error.message };
+    }
+    return { error: "Something went wrong" };
+  }
+}
 
 export default function RegisterPage() {
+  const [state, formAction, isPending] = useActionState(registerAction, { error: null });
+  const [showError, setShowError] = useState(false);
+
+  useEffect(() => {
+    if (state.error) {
+      setShowError(true);
+      const timer = setTimeout(() => setShowError(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [state.error]);
+
   return (
     <div className="min-h-screen hero-gradient flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-slide-up">
@@ -22,7 +54,25 @@ export default function RegisterPage() {
             <p className="text-gray-400">Join the marketplace revolution</p>
           </div>
 
-          <form action={registerUser} className="space-y-5">
+          {/* Error Message */}
+          {showError && state.error && (
+            <div className="mb-6 p-4 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center gap-3 animate-slide-up">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <span className="text-red-300 text-sm">{state.error}</span>
+              <button
+                onClick={() => setShowError(false)}
+                className="ml-auto text-red-400 hover:text-red-300"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          <form action={formAction} className="space-y-5">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                 Email Address
@@ -101,12 +151,25 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              className="btn-primary w-full py-4 text-lg"
+              disabled={isPending}
+              className="btn-primary w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Account
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
+              {isPending ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Creating Account...
+                </>
+              ) : (
+                <>
+                  Create Account
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </>
+              )}
             </button>
           </form>
 
