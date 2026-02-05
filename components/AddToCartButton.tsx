@@ -20,30 +20,46 @@ export default function AddToCartButton({
 }: AddToCartButtonProps) {
     const { addItem, openCart } = useCart();
     const [isAdded, setIsAdded] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleAddToCart = () => {
-        addItem({
-            productId,
-            name: productName,
-            price,
-            sellerId,
-            sellerEmail,
-        });
+        // Prevent multiple rapid clicks
+        if (isLoading || isAdded) return;
 
-        setIsAdded(true);
-        setTimeout(() => setIsAdded(false), 1500);
+        try {
+            setIsLoading(true);
 
-        // Open cart sidebar after adding item
-        setTimeout(() => openCart(), 300);
+            addItem({
+                productId,
+                name: productName,
+                price,
+                sellerId,
+                sellerEmail,
+            });
+
+            setIsAdded(true);
+
+            // Open cart sidebar after adding item
+            setTimeout(() => openCart(), 300);
+
+            // Reset button state after 1.5 seconds
+            setTimeout(() => {
+                setIsAdded(false);
+                setIsLoading(false);
+            }, 1500);
+        } catch (error) {
+            console.error("Error adding item to cart:", error);
+            setIsLoading(false);
+        }
     };
 
     return (
         <button
             onClick={handleAddToCart}
-            disabled={isAdded}
+            disabled={isAdded || isLoading}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-300 shadow-lg ${isAdded
-                    ? "bg-green-500 text-white"
-                    : "bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white hover:shadow-purple-500/25"
+                ? "bg-green-500 text-white"
+                : "bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white hover:shadow-purple-500/25"
                 }`}
         >
             {isAdded ? (
