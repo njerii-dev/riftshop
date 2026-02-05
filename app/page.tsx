@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import BuyButton from "@/components/BuyButton";
+import AddToCartButton from "@/components/AddToCartButton";
 
 // Force dynamic rendering - this page needs database access at runtime
 export const dynamic = 'force-dynamic';
@@ -123,10 +123,12 @@ export default async function Marketplace() {
                           ${product.price.toFixed(2)}
                         </span>
                       </div>
-                      <BuyButton
+                      <AddToCartButton
                         productId={product.id}
                         productName={product.name}
                         price={product.price}
+                        sellerId={product.sellerId}
+                        sellerEmail={product.seller.email}
                       />
                     </div>
                     <div className="mt-4 pt-4 border-t border-border flex items-center gap-2">

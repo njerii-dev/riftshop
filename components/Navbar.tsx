@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
+import CartIcon from "./CartIcon";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -68,18 +69,19 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Auth Buttons */}
+          {/* Cart & Auth Buttons */}
           <div className="hidden md:flex items-center gap-4">
+            <CartIcon />
             {isLoading ? (
               <div className="w-8 h-8 rounded-full bg-gray-700 animate-pulse" />
             ) : isAuthenticated ? (
               <div className="flex items-center gap-4">
                 {/* Role Badge */}
                 <span className={`text-xs px-3 py-1 rounded-full font-medium ${userRole === "ADMIN"
-                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                    : userRole === "SELLER"
-                      ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                      : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                  : userRole === "SELLER"
+                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                    : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
                   }`}>
                   {userRole}
                 </span>
@@ -118,85 +120,88 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 text-gray-300 hover:text-white"
-            aria-label="Toggle menu"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {isMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
-        </div>
+          {/* Mobile Cart & Menu Button */}
+          <div className="md:hidden flex items-center gap-2">
+            <CartIcon />
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 text-gray-300 hover:text-white"
+              aria-label="Toggle menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {isMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-700 animate-fade-in">
-            <div className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-gray-300 hover:text-white transition-colors font-medium px-4 py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
+          {/* Mobile Menu */}
+          {isMenuOpen && (
+            <div className="md:hidden py-4 border-t border-gray-700 animate-fade-in">
+              <div className="flex flex-col gap-4">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="text-gray-300 hover:text-white transition-colors font-medium px-4 py-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
 
-              <hr className="border-gray-700" />
+                <hr className="border-gray-700" />
 
-              {isAuthenticated ? (
-                <>
-                  <div className="px-4 py-2">
-                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${userRole === "ADMIN"
+                {isAuthenticated ? (
+                  <>
+                    <div className="px-4 py-2">
+                      <span className={`text-xs px-3 py-1 rounded-full font-medium ${userRole === "ADMIN"
                         ? "bg-amber-500/20 text-amber-400"
                         : userRole === "SELLER"
                           ? "bg-cyan-500/20 text-cyan-400"
                           : "bg-purple-500/20 text-purple-400"
-                      }`}>
-                      {userRole}
-                    </span>
-                    <span className="text-gray-400 text-sm ml-2">
-                      {session.user.email}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      handleSignOut();
-                    }}
-                    className="text-gray-300 hover:text-white transition-colors font-medium px-4 py-2 text-left"
-                  >
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="text-gray-300 hover:text-white transition-colors font-medium px-4 py-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Log In
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="btn-primary mx-4"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Get Started
-                  </Link>
-                </>
-              )}
+                        }`}>
+                        {userRole}
+                      </span>
+                      <span className="text-gray-400 text-sm ml-2">
+                        {session.user.email}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        handleSignOut();
+                      }}
+                      className="text-gray-300 hover:text-white transition-colors font-medium px-4 py-2 text-left"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="text-gray-300 hover:text-white transition-colors font-medium px-4 py-2"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="btn-primary mx-4"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Get Started
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </nav>
   );

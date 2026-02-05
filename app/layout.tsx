@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/Navbar";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { CartProvider } from "@/lib/cart-context";
+import CartSidebar from "@/components/CartSidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,10 +31,13 @@ export default function RootLayout({
     <html lang="en" className="scroll-smooth">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
-          <Navbar />
-          <main>
-            {children}
-          </main>
+          <CartProvider>
+            <Navbar />
+            <CartSidebar />
+            <main>
+              {children}
+            </main>
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>
