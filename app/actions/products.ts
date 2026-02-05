@@ -1,18 +1,27 @@
 "use server"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { auth } from "@/lib/auth"
+import { requireRole } from "@/lib/rbac"
 
 export async function createProduct(formData: FormData) {
+  // Only sellers and admins can create products
+  const session = await auth()
+
+  if (!session?.user) {
+    redirect("/login")
+  }
+
+  if (session.user.role !== "SELLER" && session.user.role !== "ADMIN") {
+    redirect("/unauthorized")
+  }
+
   const name = formData.get("name") as string
   const description = formData.get("description") as string
   const price = parseFloat(formData.get("price") as string)
 
-  // We are going to find the first user in your DB to "own" this product
-  // Later, we will make this the logged-in user!
-  const user = await prisma.user.findFirst();
-
-  if (!user) {
-    throw new Error("No user found in database. Please register a user first!");
+  if (!name || !description || !price) {
+    throw new Error("All fields are required")
   }
 
   await prisma.product.create({
@@ -20,10 +29,107 @@ export async function createProduct(formData: FormData) {
       name,
       description,
       price,
-      sellerId: user.id,
+      sellerId: session.user.id,
     },
   })
 
-  // Take the user back to the marketplace to see their new item
-  redirect("/")
+  // Take the seller to manage their products
+  redirect("/manage-products")
+}
+
+export async function deleteProduct(productId: string) {
+  const session = await auth()
+
+  if (!session?.user) {
+    redirect("/login")
+  }
+
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+  })
+
+  if (!product) {
+    throw new Error("Product not found")
+  }
+
+  // Sellers can only delete their own products, admins can delete any
+  if (session.user.role === "SELLER" && product.sellerId !== session.user.id) {
+    throw new Error("You can only delete your own products")
+  }
+
+  if (session.user.role === "CUSTOMER") {
+    throw new Error("Customers cannot delete products")
+  }
+
+  await prisma.product.delete({
+    where: { id: productId },
+  })
+
+  redirect("/manage-products")
+}
+
+export async function updateProduct(
+  productId: string,
+  formData: FormData
+) {
+  const session = await auth()
+
+  if (!session?.user) {
+    redirect("/login")
+  }
+
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+  })
+
+  if (!product) {
+    throw new Error("Product not found")
+  }
+
+  // Sellers can only update their own products, admins can update any
+  if (session.user.role === "SELLER" && product.sellerId !== session.user.id) {
+    throw new Error("You can only update your own products")
+  }
+
+  if (session.user.role === "CUSTOMER") {
+    throw new Error("Customers cannot update products")
+  }
+
+  const name = formData.get("name") as string
+  const description = formData.get("description") as string
+  const price = parseFloat(formData.get("price") as string)
+
+  await prisma.product.update({
+    where: { id: productId },
+    data: { name, description, price },
+  })
+
+  redirect("/manage-products")
+}
+
+// Customer purchases a product
+export async function purchaseProduct(productId: string) {
+  const session = await auth()
+
+  if (!session?.user) {
+    redirect("/login")
+  }
+
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+  })
+
+  if (!product) {
+    throw new Error("Product not found")
+  }
+
+  // Create order
+  await prisma.order.create({
+    data: {
+      productId: product.id,
+      customerId: session.user.id,
+    },
+  })
+
+  redirect("/profile")
 }

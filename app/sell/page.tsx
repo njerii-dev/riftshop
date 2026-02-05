@@ -1,7 +1,13 @@
 import { createProduct } from "@/app/actions/products";
+import { requireRole } from "@/lib/rbac";
 import Link from "next/link";
 
-export default function SellPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function SellPage() {
+  // Only sellers and admins can list products
+  const user = await requireRole(["SELLER", "ADMIN"]);
+
   return (
     <div className="min-h-screen bg-background-secondary py-12">
       <div className="max-w-2xl mx-auto px-4">
@@ -13,6 +19,14 @@ export default function SellPage() {
             <li className="text-foreground font-medium">List Product</li>
           </ol>
         </nav>
+
+        {/* Role indicator */}
+        <div className="mb-4">
+          <span className={`badge ${user?.role === 'ADMIN' ? 'badge-warning' : 'badge-success'}`}>
+            {user?.role}
+          </span>
+          <span className="text-foreground-muted text-sm ml-2">Logged in as {user?.email}</span>
+        </div>
 
         {/* Form Card */}
         <div className="bg-background rounded-3xl border border-border p-8 lg:p-10 shadow-lg">

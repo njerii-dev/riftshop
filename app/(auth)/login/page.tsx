@@ -1,3 +1,4 @@
+import { loginUser } from "@/app/actions/auth";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -21,7 +22,7 @@ export default function LoginPage() {
             <p className="text-gray-400">Sign in to continue to your account</p>
           </div>
 
-          <form className="space-y-5">
+          <form action={loginUser} className="space-y-5">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                 Email Address

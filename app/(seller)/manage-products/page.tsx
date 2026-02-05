@@ -1,12 +1,32 @@
 import { prisma } from "@/lib/prisma";
+import { requireRole } from "@/lib/rbac";
 import Link from "next/link";
 
 // Force dynamic rendering - this page needs database access at runtime
 export const dynamic = 'force-dynamic';
 
 export default async function ManageProductsPage() {
-    const products = await prisma.product.findMany({
-        orderBy: { id: 'desc' }
+    // Only sellers and admins can access this page
+    const user = await requireRole(["SELLER", "ADMIN"]);
+
+    // Get products based on role
+    const products = user?.role === "ADMIN"
+        ? await prisma.product.findMany({
+            include: { seller: true },
+            orderBy: { id: 'desc' }
+        })
+        : await prisma.product.findMany({
+            where: { sellerId: user?.id },
+            include: { seller: true },
+            orderBy: { id: 'desc' }
+        });
+
+    const totalSales = await prisma.order.count({
+        where: {
+            product: {
+                sellerId: user?.role === "ADMIN" ? undefined : user?.id
+            }
+        }
     });
 
     return (
@@ -14,15 +34,35 @@ export default async function ManageProductsPage() {
             <div className="max-w-6xl mx-auto px-4">
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-foreground mb-2">Manage Products</h1>
-                        <p className="text-foreground-muted">View and manage your listed products</p>
+                        <h1 className="text-3xl font-bold text-foreground mb-2">
+                            {user?.role === "ADMIN" ? "All Products" : "My Products"}
+                        </h1>
+                        <p className="text-foreground-muted">
+                            {user?.role === "ADMIN"
+                                ? "Manage all products listed on the marketplace"
+                                : "View and manage your listed products"}
+                        </p>
                     </div>
-                    <Link href="/sell" className="btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Add Product
-                    </Link>
+                    <div className="flex items-center gap-4">
+                        <div className="text-right">
+                            <p className="text-sm text-foreground-muted">Total Sales</p>
+                            <p className="text-2xl font-bold gradient-text">{totalSales}</p>
+                        </div>
+                        <Link href="/sell" className="btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Add Product
+                        </Link>
+                    </div>
+                </div>
+
+                {/* Role Badge */}
+                <div className="mb-6">
+                    <span className={`badge ${user?.role === 'ADMIN' ? 'badge-warning' : 'badge-success'}`}>
+                        {user?.role}
+                    </span>
+                    <span className="text-foreground-muted text-sm ml-2">{user?.email}</span>
                 </div>
 
                 {products.length === 0 ? (
@@ -42,6 +82,7 @@ export default async function ManageProductsPage() {
                             <thead>
                                 <tr>
                                     <th>Product</th>
+                                    {user?.role === "ADMIN" && <th>Seller</th>}
                                     <th>Price</th>
                                     <th>Status</th>
                                     <th>Actions</th>
@@ -61,14 +102,24 @@ export default async function ManageProductsPage() {
                                                 </div>
                                             </div>
                                         </td>
+                                        {user?.role === "ADMIN" && (
+                                            <td className="text-foreground-muted">{product.seller.email}</td>
+                                        )}
                                         <td className="font-bold gradient-text">${product.price.toFixed(2)}</td>
                                         <td><span className="badge badge-success">Active</span></td>
                                         <td>
-                                            <button className="text-foreground-muted hover:text-foreground transition-colors">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                                </svg>
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <button className="text-foreground-muted hover:text-foreground transition-colors p-2 rounded-lg hover:bg-background-secondary">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                                <button className="text-red-400 hover:text-red-300 transition-colors p-2 rounded-lg hover:bg-red-500/10">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
