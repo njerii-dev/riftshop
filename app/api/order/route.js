@@ -1,68 +1,29 @@
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { NextResponse } from "next/server";
+import { neon } from '@neondatabase/serverless';
+import { NextResponse } from 'next/server';
 
 export async function POST(request) {
     try {
-        // 1. Check if user is authenticated
-        const session = await auth();
+        // 1. Initialize the connection to Neon
+        const sql = neon(process.env.DATABASE_URL);
 
-        if (!session?.user?.id) {
-            return NextResponse.json(
-                { error: "Please login to place an order" },
-                { status: 401 }
-            );
-        }
-
-        // 2. Get the data sent from the "Buy" button
+        // 2. Capture the data sent by your BuyButton component
         const body = await request.json();
-        const { productId } = body;
+        const { productId, productName, price } = body;
 
-        if (!productId) {
-            return NextResponse.json(
-                { error: "Product ID is required" },
-                { status: 400 }
-            );
-        }
+        // 3. Insert the data into your existing 'orders' table
+        // IMPORTANT: Make sure these column names match your Neon table headers
+        await sql`
+            INSERT INTO orders (product_id, product_name, price)
+            VALUES (${productId}, ${productName}, ${price})
+        `;
 
-        // 3. Verify product exists
-        const product = await prisma.product.findUnique({
-            where: { id: productId },
-        });
+        // 4. Send a success response back to the button
+        return NextResponse.json({ success: true }, { status: 200 });
 
-        if (!product) {
-            return NextResponse.json(
-                { error: "Product not found" },
-                { status: 404 }
-            );
-        }
-
-        // 4. Create the order
-        const order = await prisma.order.create({
-            data: {
-                productId: productId,
-                customerId: session.user.id,
-            },
-            include: {
-                product: true,
-            },
-        });
-
-        return NextResponse.json(
-            {
-                message: "Order placed successfully!",
-                order: {
-                    id: order.id,
-                    productName: order.product.name,
-                    price: order.product.price,
-                }
-            },
-            { status: 200 }
-        );
     } catch (error) {
-        console.error("Order error:", error);
+        console.error("Database Error:", error);
         return NextResponse.json(
-            { error: "Failed to place order. Please try again." },
+            { error: "Failed to save order to database" },
             { status: 500 }
         );
     }
