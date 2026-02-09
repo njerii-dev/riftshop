@@ -1,36 +1,51 @@
 "use client";
 
-import { loginUser } from "@/app/actions/auth";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation"; // 1. Added useSearchParams
-import { useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 export default function LoginPage() {
-  // 2. Removed TypeScript types (the ": string | null" part)
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
-  // 3. Initialize searchParams to grab the redirect URL
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
 
   async function handleSubmit(formData: FormData) {
     setError(null);
+    setIsLoading(true);
 
-    startTransition(async () => {
-      const result = await loginUser(formData);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
-      if (result.error) {
-        setError(result.error);
-      } else if (result.redirectTo) {
-        // 4. Logic: Use callbackUrl if it exists, otherwise use default
-        const destination = callbackUrl || result.redirectTo;
+    if (!email || !password) {
+      setError("Email and password are required");
+      setIsLoading(false);
+      return;
+    }
 
-        router.push(destination);
-        router.refresh();
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError("Invalid email or password");
+        setIsLoading(false);
+        return;
       }
-    });
+
+      // Redirect to callback URL or home page
+      const destination = callbackUrl || "/";
+      router.push(destination);
+      router.refresh();
+    } catch (err) {
+      setError("An unexpected error occurred");
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -78,16 +93,16 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isLoading}
             className="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold hover:from-purple-500 hover:to-indigo-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
-            {isPending ? "Signing in..." : "Sign In"}
+            {isLoading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
         <p className="text-center text-gray-400">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
+          <Link href="/register" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
             Sign up
           </Link>
         </p>
