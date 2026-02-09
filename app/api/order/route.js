@@ -1,29 +1,27 @@
-import { neon } from '@neondatabase/serverless';
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function POST(request) {
     try {
-        // 1. Initialize the connection to Neon
-        const sql = neon(process.env.DATABASE_URL);
-
-        // 2. Capture the data sent by your BuyButton component
+        // 1. Parse the data sent from your BuyButton
         const body = await request.json();
         const { productId, productName, price } = body;
 
-        // 3. Insert the data into your existing 'orders' table
-        // IMPORTANT: Make sure these column names match your Neon table headers
-        await sql`
-            INSERT INTO orders (product_id, product_name, price)
-            VALUES (${productId}, ${productName}, ${price})
-        `;
+        // 2. Log it to your terminal so you can see it's working
+        console.log("🛒 RiftShop Order Received!");
+        console.log(`Product: ${productName} (ID: ${productId}) - Price: $${price}`);
 
-        // 4. Send a success response back to the button
-        return NextResponse.json({ success: true }, { status: 200 });
+        // TODO: Later, you can add code here to save this to your database
+
+        // 3. Send a "Success" message back to the button
+        return NextResponse.json(
+            { message: "Order processed successfully" },
+            { status: 200 }
+        );
 
     } catch (error) {
-        console.error("Database Error:", error);
+        console.error("API Error:", error);
         return NextResponse.json(
-            { error: "Failed to save order to database" },
+            { error: "Failed to process order" },
             { status: 500 }
         );
     }
