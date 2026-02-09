@@ -7,7 +7,7 @@ import { useState, useTransition } from "react";
 
 export default function LoginPage() {
   // 2. Removed TypeScript types (the ": string | null" part)
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -15,7 +15,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
 
-  async function handleSubmit(formData) {
+  async function handleSubmit(formData: FormData) {
     setError(null);
 
     startTransition(async () => {
