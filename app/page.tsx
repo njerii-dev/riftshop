@@ -185,13 +185,13 @@ export default async function Marketplace() {
               © 2026 Riftshop. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <Link href="#" className="text-foreground-muted hover:text-foreground transition-colors text-sm">
+              <Link href="/profile" className="text-foreground-muted hover:text-foreground transition-colors text-sm">
                 Terms
               </Link>
-              <Link href="#" className="text-foreground-muted hover:text-foreground transition-colors text-sm">
+              <Link href="/profile" className="text-foreground-muted hover:text-foreground transition-colors text-sm">
                 Privacy
               </Link>
-              <Link href="#" className="text-foreground-muted hover:text-foreground transition-colors text-sm">
+              <Link href="/profile" className="text-foreground-muted hover:text-foreground transition-colors text-sm">
                 Contact
               </Link>
             </div>

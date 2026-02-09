@@ -74,14 +74,14 @@ export default async function AdminDashboard() {
             Products
           </Link>
 
-          <Link href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-foreground-muted hover:text-foreground hover:bg-background-secondary transition-colors">
+          <Link href="/profile" className="flex items-center gap-3 px-4 py-3 rounded-xl text-foreground-muted hover:text-foreground hover:bg-background-secondary transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
             </svg>
             Users
           </Link>
 
-          <Link href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-foreground-muted hover:text-foreground hover:bg-background-secondary transition-colors">
+          <Link href="/profile" className="flex items-center gap-3 px-4 py-3 rounded-xl text-foreground-muted hover:text-foreground hover:bg-background-secondary transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
@@ -240,7 +240,7 @@ export default async function AdminDashboard() {
                   <h2 className="text-lg font-bold text-foreground">Recent Orders</h2>
                   <p className="text-sm text-foreground-muted">Latest transactions on the platform</p>
                 </div>
-                <Link href="#" className="text-sm text-purple-600 hover:text-purple-700 font-medium">View All</Link>
+                <Link href="/profile" className="text-sm text-purple-600 hover:text-purple-700 font-medium">View All</Link>
               </div>
 
               {recentOrders.length === 0 ? (
@@ -299,8 +299,8 @@ export default async function AdminDashboard() {
                   {users.map((u, index) => (
                     <div key={u.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-background-secondary transition-colors animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${u.role === 'ADMIN' ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
-                          u.role === 'SELLER' ? 'bg-gradient-to-br from-cyan-500 to-blue-600' :
-                            'bg-gradient-to-br from-green-500 to-emerald-600'
+                        u.role === 'SELLER' ? 'bg-gradient-to-br from-cyan-500 to-blue-600' :
+                          'bg-gradient-to-br from-green-500 to-emerald-600'
                         }`}>
                         {u.email.charAt(0).toUpperCase()}
                       </div>
@@ -311,8 +311,8 @@ export default async function AdminDashboard() {
                         </p>
                       </div>
                       <span className={`text-xs font-medium px-2 py-1 rounded-full ${u.role === 'ADMIN' ? 'bg-amber-100 text-amber-700' :
-                          u.role === 'SELLER' ? 'bg-cyan-100 text-cyan-700' :
-                            'bg-green-100 text-green-700'
+                        u.role === 'SELLER' ? 'bg-cyan-100 text-cyan-700' :
+                          'bg-green-100 text-green-700'
                         }`}>
                         {u.role}
                       </span>

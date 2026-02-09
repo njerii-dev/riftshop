@@ -13,8 +13,8 @@ export default auth((req) => {
         return NextResponse.redirect(loginUrl)
     }
 
-    // Role-based access control for admin routes
-    if (nextUrl.pathname.startsWith("/admin")) {
+    // Role-based access control for admin routes (dashboard)
+    if (nextUrl.pathname.startsWith("/dashboard")) {
         if (userRole !== "ADMIN") {
             // Non-admins trying to access admin pages get redirected
             return NextResponse.redirect(new URL("/unauthorized", nextUrl.origin))
@@ -22,7 +22,7 @@ export default auth((req) => {
     }
 
     // Role-based access control for seller routes
-    if (nextUrl.pathname.startsWith("/manage-products")) {
+    if (nextUrl.pathname.startsWith("/manage-products") || nextUrl.pathname.startsWith("/sell")) {
         if (userRole !== "SELLER" && userRole !== "ADMIN") {
             return NextResponse.redirect(new URL("/unauthorized", nextUrl.origin))
         }
@@ -36,8 +36,8 @@ export const config = {
     matcher: [
         // Protected routes - middleware will run on these paths
         "/dashboard/:path*",
-        "/admin/:path*",
         "/manage-products/:path*",
+        "/sell/:path*",
         "/profile/:path*",
         "/api/order/:path*",
     ],
