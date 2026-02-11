@@ -12,6 +12,7 @@ export default function CartPage() {
     const router = useRouter();
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+    const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
     const handleCheckout = async () => {
         if (status !== "authenticated") {
@@ -20,39 +21,53 @@ export default function CartPage() {
         }
 
         setIsCheckingOut(true);
+        setCheckoutError(null);
 
         try {
             // Process each cart item as an order
-            const orderPromises = items.map((item) =>
-                fetch("/api/order", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        productId: item.productId,
-                        productName: item.name,
-                        price: item.price,
-                        quantity: item.quantity,
-                    }),
+            const results = await Promise.all(
+                items.map(async (item) => {
+                    const res = await fetch("/api/order", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            productId: item.productId,
+                            quantity: item.quantity,
+                        }),
+                    });
+
+                    const data = await res.json();
+                    return { ok: res.ok, data, itemName: item.name };
                 })
             );
 
-            const results = await Promise.all(orderPromises);
-            const allSuccessful = results.every((res) => res.ok);
+            const failed = results.filter((r) => !r.ok);
 
-            if (allSuccessful) {
+            if (failed.length === 0) {
                 setCheckoutSuccess(true);
                 clearCart();
                 setTimeout(() => {
-                    router.push("/profile");
+                    router.push("/");
                 }, 2000);
+            } else if (failed.length < results.length) {
+                // Partial failure
+                const failedNames = failed.map((f) => f.itemName).join(", ");
+                setCheckoutError(
+                    `Some orders failed to process: ${failedNames}. Please try again.`
+                );
             } else {
-                alert("Some orders failed to process. Please try again.");
+                // All failed
+                const errorMsg =
+                    failed[0]?.data?.error || "Failed to process your order.";
+                setCheckoutError(errorMsg);
             }
         } catch (error) {
             console.error("Checkout error:", error);
-            alert("Something went wrong. Please try again.");
+            setCheckoutError(
+                "Something went wrong. Please check your connection and try again."
+            );
         } finally {
             setIsCheckingOut(false);
         }
@@ -290,6 +305,12 @@ export default function CartPage() {
                                         </span>
                                     </div>
                                 </div>
+
+                                {checkoutError && (
+                                    <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm mb-4">
+                                        {checkoutError}
+                                    </div>
+                                )}
 
                                 <button
                                     onClick={handleCheckout}

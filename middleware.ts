@@ -39,6 +39,5 @@ export const config = {
         "/manage-products/:path*",
         "/sell/:path*",
         "/profile/:path*",
-        "/api/order/:path*",
     ],
 }
