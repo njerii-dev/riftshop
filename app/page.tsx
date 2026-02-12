@@ -112,7 +112,9 @@ export default async function Marketplace() {
                   {/* Product Info */}
                   <div className="p-5">
                     <h3 className="font-semibold text-lg text-foreground mb-2 line-clamp-1">
-                      {product.name}
+                      <Link href={`/products/${product.id}`} className="hover:text-purple-400 transition-all">
+                        {product.name}
+                      </Link>
                     </h3>
                     <p className="text-foreground-muted text-sm mb-4 line-clamp-2">
                       {product.description}
