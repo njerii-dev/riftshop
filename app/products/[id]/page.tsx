@@ -35,11 +35,7 @@ export default async function ProductDescriptionPage({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div className="aspect-square bg-neutral-900 rounded-2xl flex items-center justify-center border border-white/10">
-                        {product.image_url ? (
-                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-2xl" />
-                        ) : (
-                            <span className="text-gray-600">No Image Provided</span>
-                        )}
+                        <span className="text-gray-600">No Image Available</span>
                     </div>
 
                     <div>
