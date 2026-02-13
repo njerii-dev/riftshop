@@ -5,9 +5,9 @@ import AddToCartButton from "@/components/AddToCartButton";
 export default async function ProductDescriptionPage({
     params
 }: {
-    params: { id: string }
+    params: Promise<{ id: string }>
 }) {
-    const { id } = params;
+    const { id } = await params;
 
     // 1. Fetch the product
     const product = await prisma.product.findUnique({
@@ -54,7 +54,7 @@ export default async function ProductDescriptionPage({
                         <AddToCartButton
                             productId={product.id}
                             productName={product.name}
-                            price={product.price}
+                            price={Number(product.price)}
                             sellerId={product.sellerId}
                             sellerEmail={product.seller.email}
                         />
