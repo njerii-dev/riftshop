@@ -5,36 +5,47 @@ import { auth } from "@/lib/auth"
 import { requireRole } from "@/lib/rbac"
 
 export async function createProduct(formData: FormData) {
-  // Only sellers and admins can create products
-  const session = await auth()
+  // 1. Extract the data from your form fields
+  const name = formData.get("name") as string;
+  const price = parseFloat(formData.get("price") as string);
+  const description = formData.get("description") as string;
+  const image_url = formData.get("image_url") as string; // <--- Add this
 
-  if (!session?.user) {
-    redirect("/login")
-  }
-
-  if (session.user.role !== "SELLER" && session.user.role !== "ADMIN") {
-    redirect("/unauthorized")
-  }
-
-  const name = formData.get("name") as string
-  const description = formData.get("description") as string
-  const price = parseFloat(formData.get("price") as string)
-
-  if (!name || !description || !price) {
-    throw new Error("All fields are required")
-  }
-
+  // 2. Save it to Neon via Prisma
   await prisma.product.create({
     data: {
       name,
-      description,
       price,
-      sellerId: session.user.id,
-    },
-  })
+      description,
+      image_url, // <--- Add this
+      sellerId: "some-user-id", // This usually comes from your auth
+    }
+  });
+}
 
-  // Take the seller to manage their products
-  redirect("/manage-products")
+if (session.user.role !== "SELLER" && session.user.role !== "ADMIN") {
+  redirect("/unauthorized")
+}
+
+const name = formData.get("name") as string
+const description = formData.get("description") as string
+const price = parseFloat(formData.get("price") as string)
+
+if (!name || !description || !price) {
+  throw new Error("All fields are required")
+}
+
+await prisma.product.create({
+  data: {
+    name,
+    description,
+    price,
+    sellerId: session.user.id,
+  },
+})
+
+// Take the seller to manage their products
+redirect("/manage-products")
 }
 
 export async function deleteProduct(productId: string) {
