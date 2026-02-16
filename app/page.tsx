@@ -1,51 +1,117 @@
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import AddToCartButton from "@/components/AddToCartButton";
 
-// Force dynamic rendering - this page needs database access at runtime
 export const dynamic = 'force-dynamic';
 
 export default async function Marketplace() {
-  // Fetch products from database
-  const products = await prisma.product.findMany({
-    include: {
-      seller: true,
+  // We are defining your 6 products directly in the code here.
+  // This bypasses the database and uses your Cloudinary links directly.
+  const products = [
+    {
+      id: "1",
+      name: "Product One",
+      price: 99.99,
+      description: "Description for your first amazing product.",
+      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988143/Screenshot_2026-02-13_160332_p80mb1.png",
+      seller: { email: "seller1@riftshop.com" },
+      sellerId: "s1"
     },
-    orderBy: {
-      id: 'desc'
+    {
+      id: "2",
+      name: "Product Two",
+      price: 149.50,
+      description: "Description for your second amazing product.",
+      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988154/Screenshot_2026-02-13_160416_bwtlp9.png",
+      seller: { email: "seller2@riftshop.com" },
+      sellerId: "s2"
+    },
+    {
+      id: "3",
+      name: "Product Three",
+      price: 75.00,
+      description: "Description for your third amazing product.",
+      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988165/Screenshot_2026-02-13_160531_mifzlg.png",
+      seller: { email: "seller3@riftshop.com" },
+      sellerId: "s3"
+    },
+    {
+      id: "4",
+      name: "Product Four",
+      price: 200.00,
+      description: "Description for your fourth amazing product.",
+      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988176/Screenshot_2026-02-13_160618_j4nwey.png",
+      seller: { email: "seller4@riftshop.com" },
+      sellerId: "s4"
+    },
+    {
+      id: "5",
+      name: "Product Five",
+      price: 120.00,
+      description: "Description for your fifth amazing product.",
+      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988188/Screenshot_2026-02-13_160711_tvgjig.png",
+      seller: { email: "seller5@riftshop.com" },
+      sellerId: "s5"
+    },
+    {
+      id: "6",
+      name: "Product Six",
+      price: 310.00,
+      description: "Description for your sixth amazing product.",
+      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988204/Screenshot_2026-02-13_160751_qrggex.png",
+      seller: { email: "seller6@riftshop.com" },
+      sellerId: "s6"
     }
-  });
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="hero-gradient py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-4xl mx-auto animate-slide-up">
-            <span className="badge badge-primary mb-6 inline-block">
-              ✨ The Future of Shopping
-            </span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Unique Products</span> from Sellers Worldwide
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-              Join our thriving marketplace where creativity meets commerce.
-              Find one-of-a-kind items or start selling your own creations today.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="#products" className="btn-primary text-lg px-8 py-4">
-                Explore Products
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </Link>
-              <Link href="/sell" className="btn-secondary text-lg px-8 py-4 text-white border-white/30 hover:border-white hover:text-white">
-                Start Selling
-              </Link>
-            </div>
-          </div>
+      <section className="hero-gradient py-20">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h1 className="text-5xl font-bold text-white mb-6">Marketplace</h1>
+          <p className="text-gray-300 text-xl">Your hardcoded products are now live below.</p>
+        </div>
+      </section>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 max-w-4xl mx-auto">
-            {[
-              { value: "10K+", label: "Products
+      {/* Products Grid */}
+      <section id="products" className="py-20 bg-background-secondary">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map((product) => (
+              <article key={product.id} className="product-card bg-neutral-900 rounded-3xl overflow-hidden shadow-xl border border-white/5 p-4">
+                {/* Image Container */}
+                <div className="relative w-full h-48 bg-black rounded-2xl mb-4 overflow-hidden border border-white/10">
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // This fixes the 'Image Not Available' by providing a fallback if the link is broken
+                      e.currentTarget.src = "https://placehold.co/600x400?text=Image+Loading...";
+                    }}
+                  />
+                </div>
+
+                <div className="p-2">
+                  <h3 className="text-xl font-bold text-white mb-2">{product.name}</h3>
+                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">{product.description}</p>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-cyan-400">${product.price.toFixed(2)}</span>
+                    <AddToCartButton
+                      productId={product.id}
+                      productName={product.name}
+                      price={product.price}
+                      sellerId={product.sellerId}
+                      sellerEmail={product.seller.email}
+                    />
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
