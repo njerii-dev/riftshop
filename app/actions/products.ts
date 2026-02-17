@@ -5,10 +5,12 @@ import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 
+// 1. CREATE
 export async function createProduct(formData: FormData) {
   const session = await auth()
 
   if (!session?.user) redirect("/login")
+
   if (session.user.role !== "SELLER" && session.user.role !== "ADMIN") {
     redirect("/unauthorized")
   }
@@ -16,10 +18,10 @@ export async function createProduct(formData: FormData) {
   const name = formData.get("name") as string
   const description = formData.get("description") as string
   const price = parseFloat(formData.get("price") as string)
-  const imageUrl = formData.get("imageUrl") as string // Added this for your Cloudinary links
+  const imageUrl = formData.get("imageUrl") as string
 
   if (!name || !description || isNaN(price)) {
-    throw new Error("Valid name, description, and price are required")
+    throw new Error("Missing required fields")
   }
 
   await prisma.product.create({
@@ -33,10 +35,10 @@ export async function createProduct(formData: FormData) {
   })
 
   revalidatePath("/manage-products")
-  revalidatePath("/marketplace")
   redirect("/manage-products")
 }
 
+// 2. DELETE
 export async function deleteProduct(productId: string) {
   const session = await auth()
 
@@ -48,12 +50,9 @@ export async function deleteProduct(productId: string) {
 
   if (!product) throw new Error("Product not found")
 
-  // Permission check
+  // Check if user is allowed to delete
   if (session.user.role === "SELLER" && product.sellerId !== session.user.id) {
-    throw new Error("You can only delete your own products")
-  }
-  if (session.user.role === "CUSTOMER") {
-    throw new Error("Customers cannot delete products")
+    throw new Error("Unauthorized")
   }
 
   await prisma.product.delete({
@@ -61,24 +60,14 @@ export async function deleteProduct(productId: string) {
   })
 
   revalidatePath("/manage-products")
-  revalidatePath("/marketplace")
-  redirect("/manage-products")
+  // We don't use redirect here so the user stays on the manage page
 }
 
+// 3. UPDATE
 export async function updateProduct(productId: string, formData: FormData) {
   const session = await auth()
 
   if (!session?.user) redirect("/login")
-
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-  })
-
-  if (!product) throw new Error("Product not found")
-
-  if (session.user.role === "SELLER" && product.sellerId !== session.user.id) {
-    throw new Error("You can only update your own products")
-  }
 
   const name = formData.get("name") as string
   const description = formData.get("description") as string
@@ -91,24 +80,18 @@ export async function updateProduct(productId: string, formData: FormData) {
   })
 
   revalidatePath("/manage-products")
-  revalidatePath("/marketplace")
   redirect("/manage-products")
 }
 
+// 4. PURCHASE
 export async function purchaseProduct(productId: string) {
   const session = await auth()
 
   if (!session?.user) redirect("/login")
 
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-  })
-
-  if (!product) throw new Error("Product not found")
-
   await prisma.order.create({
     data: {
-      productId: product.id,
+      productId,
       customerId: session.user.id,
     },
   })
