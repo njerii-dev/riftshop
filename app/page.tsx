@@ -85,10 +85,6 @@ export default async function Marketplace() {
                     src={product.imageUrl}
                     alt={product.name}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // This fixes the 'Image Not Available' by providing a fallback if the link is broken
-                      e.currentTarget.src = "https://placehold.co/600x400?text=Image+Loading...";
-                    }}
                   />
                 </div>
 

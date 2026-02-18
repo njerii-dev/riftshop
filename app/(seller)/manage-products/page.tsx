@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/rbac";
 import Link from "next/link";
 import { logoutUser } from "@/app/actions/auth";
-import { revalidatePath } from "next/cache";
+import { deleteProduct } from "@/app/actions/products";
 
 export const dynamic = 'force-dynamic';
 
@@ -67,8 +67,7 @@ export default async function ManageProductsPage() {
                                         </Link>
                                         <form action={async () => {
                                             "use server";
-                                            await prisma.product.delete({ where: { id: product.id } });
-                                            revalidatePath("/manage-products");
+                                            await deleteProduct(product.id);
                                         }}>
                                             <button type="submit" className="px-4 py-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors">
                                                 Delete
