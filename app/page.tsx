@@ -9,54 +9,54 @@ export default async function Marketplace() {
   const products = [
     {
       id: "1",
-      name: "Product One",
+      name: "Iphone 13 pro",
       price: 99.99,
-      description: "Description for your first amazing product.",
+      description: "Blue 6.1 inch iphone 13 with Aluminum edge",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988143/Screenshot_2026-02-13_160332_p80mb1.png",
       seller: { email: "seller1@riftshop.com" },
       sellerId: "s1"
     },
     {
       id: "2",
-      name: "Product Two",
+      name: "Samsung Tv",
       price: 149.50,
-      description: "Description for your second amazing product.",
+      description: "42 inchSamsung TV",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988154/Screenshot_2026-02-13_160416_bwtlp9.png",
       seller: { email: "seller2@riftshop.com" },
       sellerId: "s2"
     },
     {
       id: "3",
-      name: "Product Three",
+      name: "Think pad lenovo",
       price: 75.00,
-      description: "Description for your third amazing product.",
+      description: "Black think pad with 4gb ram",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988165/Screenshot_2026-02-13_160531_mifzlg.png",
       seller: { email: "seller3@riftshop.com" },
       sellerId: "s3"
     },
     {
       id: "4",
-      name: "Product Four",
+      name: "Vintage Camera",
       price: 200.00,
-      description: "Description for your fourth amazing product.",
+      description: "A grey vintage camera with 6gb storage",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988176/Screenshot_2026-02-13_160618_j4nwey.png",
       seller: { email: "seller4@riftshop.com" },
       sellerId: "s4"
     },
     {
       id: "5",
-      name: "Product Five",
+      name: "Handmade leather wallet",
       price: 120.00,
-      description: "Description for your fifth amazing product.",
+      description: "Brown handmade leather wallet with 7 card slots and casg compartement",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988188/Screenshot_2026-02-13_160711_tvgjig.png",
       seller: { email: "seller5@riftshop.com" },
       sellerId: "s5"
     },
     {
       id: "6",
-      name: "Product Six",
+      name: "Wireless earpods",
       price: 310.00,
-      description: "Description for your sixth amazing product.",
+      description: "Black wireless earpods with 24 hour battery life",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988204/Screenshot_2026-02-13_160751_qrggex.png",
       seller: { email: "seller6@riftshop.com" },
       sellerId: "s6"
