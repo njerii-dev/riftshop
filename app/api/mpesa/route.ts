@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import axios from 'axios';
 
 export async function POST(req: Request) {
     try {
@@ -12,11 +11,12 @@ export async function POST(req: Request) {
         const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
         const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
 
-        const tokenResponse = await axios.get(
+        const tokenRes = await fetch(
             'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
             { headers: { Authorization: `Basic ${auth}` } }
         );
-        const token = tokenResponse.data.access_token;
+        const tokenData = await tokenRes.json();
+        const token = tokenData.access_token;
 
         // 3. Prepare the STK Push variables
         const shortCode = process.env.MPESA_SHORTCODE || "174379";
@@ -28,31 +28,38 @@ export async function POST(req: Request) {
         ).toString('base64');
 
         // 4. Initiate the STK Push
-        const mpesaResponse = await axios.post(
+        const mpesaRes = await fetch(
             'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
             {
-                BusinessShortCode: shortCode,
-                Password: password,
-                Timestamp: timestamp,
-                TransactionType: "CustomerPayBillOnline",
-                Amount: amount,
-                PartyA: phone,
-                PartyB: shortCode,
-                PhoneNumber: phone,
-                CallBackURL: process.env.CALLBACK_URL,
-                AccountReference: "RiftShop_Store",
-                TransactionDesc: "Payment for Goods"
-            },
-            { headers: { Authorization: `Bearer ${token}` } }
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    BusinessShortCode: shortCode,
+                    Password: password,
+                    Timestamp: timestamp,
+                    TransactionType: "CustomerPayBillOnline",
+                    Amount: amount,
+                    PartyA: phone,
+                    PartyB: shortCode,
+                    PhoneNumber: phone,
+                    CallBackURL: process.env.CALLBACK_URL,
+                    AccountReference: "RiftShop_Store",
+                    TransactionDesc: "Payment for Goods"
+                }),
+            }
         );
+        const mpesaData = await mpesaRes.json();
 
         // 5. Send success back to your frontend
-        return NextResponse.json(mpesaResponse.data, { status: 200 });
+        return NextResponse.json(mpesaData, { status: 200 });
 
     } catch (error: any) {
-        console.error("M-Pesa API Error:", error.response?.data || error.message);
+        console.error("M-Pesa API Error:", error.message);
         return NextResponse.json(
-            { error: "Failed to initiate M-Pesa payment", details: error.response?.data },
+            { error: "Failed to initiate M-Pesa payment" },
             { status: 500 }
         );
     }
