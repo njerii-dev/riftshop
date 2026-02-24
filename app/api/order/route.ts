@@ -10,7 +10,7 @@ export async function POST(request: Request) {
         if (!session?.user?.id) {
             return NextResponse.json(
                 { error: "You must be signed in to place an order" },
-                { status: 401 }
+                { statusA: 401 }
             );
         }
 
