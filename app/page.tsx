@@ -1,67 +1,23 @@
 import Link from "next/link";
 import AddToCartButton from "@/components/AddToCartButton";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = 'force-dynamic';
 
 export default async function Marketplace() {
-  // We are defining your 6 products directly in the code here.
-  // This bypasses the database and uses your Cloudinary links directly.
-  const products = [
-    {
-      id: "1",
-      name: "Iphone 13 pro",
-      price: 99.99,
-      description: "Blue 6.1 inch iphone 13 with Aluminum edge",
-      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988143/Screenshot_2026-02-13_160332_p80mb1.png",
-      seller: { email: "seller1@riftshop.com" },
-      sellerId: "s1"
+  // Fetch products from the database with their seller info
+  const products = await prisma.product.findMany({
+    include: {
+      seller: {
+        select: {
+          email: true,
+        },
+      },
     },
-    {
-      id: "2",
-      name: "Samsung Tv",
-      price: 149.50,
-      description: "42 inchSamsung TV",
-      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988154/Screenshot_2026-02-13_160416_bwtlp9.png",
-      seller: { email: "seller2@riftshop.com" },
-      sellerId: "s2"
+    orderBy: {
+      name: "asc",
     },
-    {
-      id: "3",
-      name: "Think pad lenovo",
-      price: 75.00,
-      description: "Black think pad with 4gb ram",
-      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988165/Screenshot_2026-02-13_160531_mifzlg.png",
-      seller: { email: "seller3@riftshop.com" },
-      sellerId: "s3"
-    },
-    {
-      id: "4",
-      name: "Vintage Camera",
-      price: 200.00,
-      description: "A grey vintage camera with 6gb storage",
-      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988176/Screenshot_2026-02-13_160618_j4nwey.png",
-      seller: { email: "seller4@riftshop.com" },
-      sellerId: "s4"
-    },
-    {
-      id: "5",
-      name: "Handmade leather wallet",
-      price: 120.00,
-      description: "Brown handmade leather wallet with 7 card slots and casg compartement",
-      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988188/Screenshot_2026-02-13_160711_tvgjig.png",
-      seller: { email: "seller5@riftshop.com" },
-      sellerId: "s5"
-    },
-    {
-      id: "6",
-      name: "Wireless earpods",
-      price: 310.00,
-      description: "Black wireless earpods with 24 hour battery life",
-      imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988204/Screenshot_2026-02-13_160751_qrggex.png",
-      seller: { email: "seller6@riftshop.com" },
-      sellerId: "s6"
-    }
-  ];
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -69,7 +25,7 @@ export default async function Marketplace() {
       <section className="hero-gradient py-20">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="text-5xl font-bold text-white mb-6">Marketplace</h1>
-          <p className="text-gray-300 text-xl">Your hardcoded products are now live below.</p>
+          <p className="text-gray-300 text-xl">Browse our latest products below.</p>
         </div>
       </section>
 
@@ -82,7 +38,7 @@ export default async function Marketplace() {
                 {/* Image Container */}
                 <div className="relative w-full h-48 bg-black rounded-2xl mb-4 overflow-hidden border border-white/10">
                   <img
-                    src={product.imageUrl}
+                    src={product.imageUrl || "/placeholder.png"}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />
