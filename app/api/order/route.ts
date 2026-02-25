@@ -4,42 +4,24 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
     try {
-        // 1. Authenticate the user via session
         const session = await auth();
-
         if (!session?.user?.id) {
-            return NextResponse.json(
-                { error: "You must be signed in to place an order" },
-                { status: 401 }
-            );
+            return NextResponse.json({ error: "Sign in required" }, { status: 401 });
         }
 
-        // 2. Parse the request body
         const body = await request.json();
-        const { productId, quantity } = body;
+        const { productId } = body;
 
-        if (!productId) {
-            return NextResponse.json(
-                { error: "Product ID is required" },
-                { status: 400 }
-            );
-        }
-
-        const orderQuantity = quantity && quantity > 0 ? quantity : 1;
-
-        // 3. Verify the product exists
+        // 1. Get Product Details
         const product = await prisma.product.findUnique({
             where: { id: productId },
         });
 
         if (!product) {
-            return NextResponse.json(
-                { error: `Database does not recognize ID: ${productId}` },
-                { status: 404 }
-            );
+            return NextResponse.json({ error: "Product not in database" }, { status: 404 });
         }
 
-        // 4. Create order in the database
+        // 2. Create the Order in Neon
         const order = await prisma.order.create({
             data: {
                 productId: product.id,
@@ -47,14 +29,13 @@ export async function POST(request: Request) {
             },
         });
 
-        console.log(
-            `🛒 Order placed in DB! User: ${session.user.email}, Product: ${product.name}, Order ID: ${order.id}`
-        );
+        console.log("✅ Step 1: Order saved to Neon ID:", order.id);
 
-        // ... after order is created ...
-
-        // 5. TRIGGER M-PESA
+        // 3. TRIGGER M-PESA (The part that is likely failing)
+        // Note: Change 'localhost:3000' to your actual URL if you have deployed to Vercel
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+        console.log("🛰️ Step 2: Attempting to contact M-Pesa route at:", `${baseUrl}/api/mpesa/stkpush`);
 
         const mpesaResponse = await fetch(`${baseUrl}/api/mpesa/stkpush`, {
             method: "POST",
@@ -66,22 +47,27 @@ export async function POST(request: Request) {
             }),
         });
 
-        const mpesaResult = await mpesaResponse.json();
+        if (!mpesaResponse.ok) {
+            const errorText = await mpesaResponse.text();
+            console.error("❌ Step 3: The M-Pesa route returned an error:", errorText);
+            return NextResponse.json({
+                error: "Order saved, but M-Pesa failed to start.",
+                debug: errorText
+            }, { status: 500 });
+        }
 
-        // 6. Final Success Response (Now showing M-Pesa status!)
-        return NextResponse.json(
-            {
-                message: "Order Saved",
-                mpesaStatus: mpesaResult.CustomerMessage || "M-Pesa Triggered",
-                details: mpesaResult
-            },
-            { status: 201 }
-        );
-    } catch (error) {
-        console.error("Order API Error:", error);
-        return NextResponse.json(
-            { error: "Failed to process order" },
-            { status: 500 }
-        );
+        const mpesaResult = await mpesaResponse.json();
+        console.log("🚀 Step 4: Safaricom says:", mpesaResult);
+
+        return NextResponse.json({
+            message: "Success! Check your phone for the M-Pesa prompt.",
+            orderId: order.id,
+            mpesa: mpesaResult
+        }, { status: 201 });
+
+    } catch (error: any) {
+        // This catch block tells us IF the code itself has a typo or a crash
+        console.error("🔥 CRITICAL CRASH:", error.message);
+        return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
     }
 }
