@@ -29,14 +29,24 @@ export default function BuyButton({ productId, productName, price }: BuyButtonPr
                 }),
             });
 
+            // Parse the data so we can see the redirect link
+            const data = await response.json();
+
             if (response.ok) {
                 setShowSuccess(true);
+
+                // 🔥 THE CHANGE IS HERE
+                // If the API sent a redirect link (the payment screen), follow it!
                 setTimeout(() => {
                     setShowSuccess(false);
-                    router.refresh();
-                }, 2000);
+                    if (data.redirectTo) {
+                        router.push(data.redirectTo);
+                    } else {
+                        router.refresh();
+                    }
+                }, 1500);
+
             } else {
-                const data = await response.json();
                 alert(data.error || "Failed to place order. Please try again.");
             }
         } catch (error) {
@@ -53,7 +63,7 @@ export default function BuyButton({ productId, productName, price }: BuyButtonPr
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                Order Placed!
+                Processing Payment...
             </div>
         );
     }
