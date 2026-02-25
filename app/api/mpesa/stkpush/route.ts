@@ -4,20 +4,35 @@ export async function POST(request: Request) {
     try {
         const { amount, phoneNumber, orderId } = await request.json();
 
+        // Ensure phone number is a string and remove any "+" sign
+        const cleanPhone = String(phoneNumber).replace(/\+/g, "");
+
         // 1. Generate Access Token
+        const consumerKey = process.env.MPESA_CONSUMER_KEY;
+        const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
+
         const url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
-        const auth = Buffer.from(`${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`).toString("base64");
+        const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
 
         const tokenRes = await fetch(url, {
             headers: { Authorization: `Basic ${auth}` },
+            cache: 'no-store'
         });
-        const { access_token } = await tokenRes.json();
 
-        // 2. Prepare STK Push details
+        const tokenData = await tokenRes.json();
+        const access_token = tokenData.access_token;
+
+        if (!access_token) {
+            console.error("Token Generation Failed:", tokenData);
+            return NextResponse.json({ error: "Invalid Consumer Key/Secret" }, { status: 401 });
+        }
+
+        // 2. Prepare STK Push
+        const shortCode = process.env.MPESA_SHORTCODE || "174379";
+        const passkey = process.env.MPESA_PASSKEY;
         const timestamp = new Date().toISOString().replace(/[-:T.]/g, "").slice(0, 14);
-        const password = Buffer.from(
-            process.env.MPESA_SHORTCODE + process.env.MPESA_PASSKEY + timestamp
-        ).toString("base64");
+
+        const password = Buffer.from(shortCode + passkey + timestamp).toString("base64");
 
         const stkUrl = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
 
@@ -28,26 +43,25 @@ export async function POST(request: Request) {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                BusinessShortCode: process.env.MPESA_SHORTCODE,
+                BusinessShortCode: shortCode,
                 Password: password,
                 Timestamp: timestamp,
                 TransactionType: "CustomerPayBillOnline",
-                Amount: amount,
-                PartyA: phoneNumber, // The phone number receiving the prompt
-                PartyB: process.env.MPESA_SHORTCODE,
-                PhoneNumber: phoneNumber,
+                Amount: Math.round(amount),
+                PartyA: cleanPhone,
+                PartyB: shortCode,
+                PhoneNumber: cleanPhone,
                 CallBackURL: `${process.env.NEXT_PUBLIC_APP_URL}/api/mpesa/callback`,
-                AccountReference: `Order-${orderId}`,
-                TransactionDesc: "Payment for goods",
+                AccountReference: `Order${orderId}`,
+                TransactionDesc: "Payment",
             }),
         });
 
         const data = await res.json();
-        console.log("Safaricom Response:", data);
-
         return NextResponse.json(data);
-    } catch (error) {
-        console.error("STK Push Error:", error);
-        return NextResponse.json({ error: "Failed to initiate M-Pesa" }, { status: 500 });
+
+    } catch (error: any) {
+        console.error("Detailed STK Push Error:", error);
+        return NextResponse.json({ error: error.message || "STK Push Failed" }, { status: 500 });
     }
 }
