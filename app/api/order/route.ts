@@ -51,7 +51,7 @@ export async function POST(request: Request) {
         });
 
         console.log(
-            `🛒 Order placed! User: ${session.user.email}, Product: ${product.name} (x${orderQuantity}), Order ID: ${order.id}`
+            🛒 Order placed! User: ${ session.user.email }, Product: ${ product.name }(x${ orderQuantity }), Order ID: ${ order.id }
         );
 
         return NextResponse.json(
