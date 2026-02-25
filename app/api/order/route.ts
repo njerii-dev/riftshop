@@ -33,12 +33,12 @@ export async function POST(request: Request) {
         });
 
         if (!product) {
+            // This will send the ID back to your browser screen so you can see it
             return NextResponse.json(
-                { error: "Product not found" },
+                { error: `Database does not recognize ID: ${productId}` },
                 { status: 404 }
             );
         }
-
         // 4. Create order(s) in the database
         //    Since the Order model doesn't have a quantity field,
         //    we create one order per unit, or you can create a single order.
