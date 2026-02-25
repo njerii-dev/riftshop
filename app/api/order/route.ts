@@ -51,41 +51,32 @@ export async function POST(request: Request) {
             `🛒 Order placed in DB! User: ${session.user.email}, Product: ${product.name}, Order ID: ${order.id}`
         );
 
-        // 5. TRIGGER M-PESA STK PUSH
-        // We wrap this in a try/catch so the order still "succeeds" even if M-Pesa fails to trigger
-        try {
-            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        // ... after order is created ...
 
-            // NOTE: Ensure your session user has a phone field, 
-            // otherwise replace session.user.phone with a phone number from the request body
-            const userPhone = (session.user as any).phone || "2547XXXXXXXX";
+        // 5. TRIGGER M-PESA
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-            const mpesaResponse = await fetch(`${baseUrl}/api/mpesa/stkpush`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    amount: Math.round(product.price * orderQuantity), // M-Pesa doesn't like decimals
-                    phoneNumber: userPhone,
-                    orderId: order.id,
-                }),
-            });
+        const mpesaResponse = await fetch(`${baseUrl}/api/mpesa/stkpush`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                amount: product.price,
+                phoneNumber: "254703704389",
+                orderId: order.id,
+            }),
+        });
 
-            const mpesaResult = await mpesaResponse.json();
-            console.log("M-Pesa API Response:", mpesaResult);
+        const mpesaResult = await mpesaResponse.json();
 
-        } catch (mpesaError) {
-            console.error("Failed to trigger M-Pesa STK Push:", mpesaError);
-        }
-
-        // 6. Final Success Response
+        // 6. Final Success Response (Now showing M-Pesa status!)
         return NextResponse.json(
             {
-                message: "Order placed and payment initiated",
-                orderId: order.id,
+                message: "Order Saved",
+                mpesaStatus: mpesaResult.CustomerMessage || "M-Pesa Triggered",
+                details: mpesaResult
             },
             { status: 201 }
         );
-
     } catch (error) {
         console.error("Order API Error:", error);
         return NextResponse.json(
