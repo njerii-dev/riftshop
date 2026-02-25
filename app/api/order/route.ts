@@ -48,8 +48,6 @@ export async function POST(request: Request) {
             }),
         }).catch(err => console.error("M-Pesa trigger failed:", err));
 
-        // 6. SUCCESS RESPONSE
-        // This sends the data back to your BuyButton.tsx
         return NextResponse.json({
             message: "Order placed successfully",
             orderId: order.id,
