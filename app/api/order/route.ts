@@ -28,13 +28,11 @@ export async function POST(request: Request) {
         const orderQuantity = quantity && quantity > 0 ? quantity : 1;
 
         // 3. Verify the product exists
-        console.log(`🔍 Looking up product with ID: "${productId}"`);
         const product = await prisma.product.findUnique({
             where: { id: productId },
         });
 
         if (!product) {
-            console.error(`❌ Product not found for ID: "${productId}"`);
             return NextResponse.json(
                 { error: "Product not found" },
                 { status: 404 }
