@@ -51,10 +51,11 @@ export async function POST(request: Request) {
         } catch (mpesaError) {
             console.error("M-Pesa trigger skipped:", mpesaError);
         }
+        // Change the redirect path to the new folder location
         return NextResponse.json({
             message: "Order placed",
             orderId: order.id,
-            redirectTo: `/payment-screen?orderId=${order.id}` // 👈 Tell the frontend where to go
+            redirectTo: `/paymentscreen?orderId=${order.id}` // Remove the "/api/mpesa" part
         }, { status: 201 });
 
     } catch (error: any) {
