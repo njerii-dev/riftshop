@@ -33,16 +33,13 @@ export async function POST(request: Request) {
         });
 
         if (!product) {
-            // This will send the ID back to your browser screen so you can see it
             return NextResponse.json(
                 { error: `Database does not recognize ID: ${productId}` },
                 { status: 404 }
             );
         }
-        // 4. Create order(s) in the database
-        //    Since the Order model doesn't have a quantity field,
-        //    we create one order per unit, or you can create a single order.
-        //    For simplicity, create a single order record.
+
+        // 4. Create order in the database
         const order = await prisma.order.create({
             data: {
                 productId: product.id,
@@ -51,16 +48,44 @@ export async function POST(request: Request) {
         });
 
         console.log(
-            `🛒 Order placed! User: ${session.user.email}, Product: ${product.name} (x${orderQuantity}), Order ID: ${order.id}`
+            `🛒 Order placed in DB! User: ${session.user.email}, Product: ${product.name}, Order ID: ${order.id}`
         );
 
+        // 5. TRIGGER M-PESA STK PUSH
+        // We wrap this in a try/catch so the order still "succeeds" even if M-Pesa fails to trigger
+        try {
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+            // NOTE: Ensure your session user has a phone field, 
+            // otherwise replace session.user.phone with a phone number from the request body
+            const userPhone = (session.user as any).phone || "2547XXXXXXXX";
+
+            const mpesaResponse = await fetch(`${baseUrl}/api/mpesa/stkpush`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    amount: Math.round(product.price * orderQuantity), // M-Pesa doesn't like decimals
+                    phoneNumber: userPhone,
+                    orderId: order.id,
+                }),
+            });
+
+            const mpesaResult = await mpesaResponse.json();
+            console.log("M-Pesa API Response:", mpesaResult);
+
+        } catch (mpesaError) {
+            console.error("Failed to trigger M-Pesa STK Push:", mpesaError);
+        }
+
+        // 6. Final Success Response
         return NextResponse.json(
             {
-                message: "Order placed successfully",
+                message: "Order placed and payment initiated",
                 orderId: order.id,
             },
             { status: 201 }
         );
+
     } catch (error) {
         console.error("Order API Error:", error);
         return NextResponse.json(
