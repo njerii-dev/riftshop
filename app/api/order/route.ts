@@ -34,11 +34,8 @@ export async function POST(request: Request) {
 
         console.log(`✅ Order ${order.id} saved to Neon!`);
 
-        // 5. TRIGGER M-PESA (The Silent Way)
-        // This part is wrapped so it DOES NOT crash your order if it fails
+        // 5. TRIGGER M-PESA
         try {
-            // Check your .env for this URL! 
-            // If it's missing, it defaults to localhost
             const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
             fetch(`${baseUrl}/api/mpesa/stkpush`, {
@@ -46,7 +43,7 @@ export async function POST(request: Request) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     amount: product.price * orderQuantity,
-                    phoneNumber: "254703704389", // 👈 PUT YOUR NUMBER HERE
+                    phoneNumber: "254703704389",
                     orderId: order.id,
                 }),
             }).catch(err => console.error("M-Pesa background fetch failed:", err));
@@ -54,11 +51,10 @@ export async function POST(request: Request) {
         } catch (mpesaError) {
             console.error("M-Pesa trigger skipped:", mpesaError);
         }
-
-        // 6. Return Success (Just like before)
         return NextResponse.json({
-            message: "Order placed successfully",
+            message: "Order placed",
             orderId: order.id,
+            redirectTo: `/payment-screen?orderId=${order.id}` // 👈 Tell the frontend where to go
         }, { status: 201 });
 
     } catch (error: any) {
