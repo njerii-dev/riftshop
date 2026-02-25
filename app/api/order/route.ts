@@ -4,47 +4,65 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
     try {
+        // 1. Authenticate
         const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: "Sign in required" }, { status: 401 });
+        }
+
+        // 2. Parse Body
         const body = await request.json();
-        const { productId } = body;
+        const { productId, quantity } = body;
+        const orderQuantity = quantity && quantity > 0 ? quantity : 1;
 
-        // 1. Check if we have the product
-        const product = await prisma.product.findUnique({ where: { id: productId } });
-        if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
-
-        // 2. Create Order
-        const order = await prisma.order.create({
-            data: { productId: product.id, customerId: session?.user?.id || "guest" }
+        // 3. Verify Product in Neon
+        const product = await prisma.product.findUnique({
+            where: { id: productId },
         });
 
-        // 3. THE TRIGGER (With better error reporting)
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        if (!product) {
+            return NextResponse.json({ error: "Product not found" }, { status: 404 });
+        }
 
+        // 4. Create the Order (This is what was working before)
+        const order = await prisma.order.create({
+            data: {
+                productId: product.id,
+                customerId: session.user.id,
+            },
+        });
+
+        console.log(`✅ Order ${order.id} saved to Neon!`);
+
+        // 5. TRIGGER M-PESA (The Silent Way)
+        // This part is wrapped so it DOES NOT crash your order if it fails
         try {
-            const mpesaResponse = await fetch(`${baseUrl}/api/mpesa/stkpush`, {
+            // Check your .env for this URL! 
+            // If it's missing, it defaults to localhost
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+            fetch(`${baseUrl}/api/mpesa/stkpush`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    amount: product.price,
-                    phoneNumber: "254703704389", // Use your real number
+                    amount: product.price * orderQuantity,
+                    phoneNumber: "254703704389", // 👈 PUT YOUR NUMBER HERE
                     orderId: order.id,
                 }),
-            });
+            }).catch(err => console.error("M-Pesa background fetch failed:", err));
 
-            const result = await mpesaResponse.json();
-            return NextResponse.json({ message: "Order placed", mpesa: result });
-
-        } catch (fetchError: any) {
-            // This happens if the URL is wrong or the file is missing
-            console.error("FETCH_ERROR:", fetchError.message);
-            return NextResponse.json({
-                error: "The order was saved, but the M-Pesa route could not be reached.",
-                reason: fetchError.message
-            }, { status: 500 });
+        } catch (mpesaError) {
+            console.error("M-Pesa trigger skipped:", mpesaError);
         }
 
-    } catch (outerError: any) {
-        console.error("MAIN_ROUTE_CRASH:", outerError);
-        return NextResponse.json({ error: "Internal Server Error", details: outerError.message }, { status: 500 });
+        // 6. Return Success (Just like before)
+        return NextResponse.json({
+            message: "Order placed successfully",
+            orderId: order.id,
+        }, { status: 201 });
+
+    } catch (error: any) {
+        console.error("ORDER_API_ERROR:", error);
+        return NextResponse.json({ error: "Failed to process order" }, { status: 500 });
     }
 }
