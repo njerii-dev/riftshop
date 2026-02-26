@@ -77,7 +77,7 @@ export default function CartPage() {
             } else {
                 // All failed
                 const errorMsg =
-                    failed[0]?.data?.error || "Failed to process your order.";
+                    failed[0]?.data?.details || failed[0]?.data?.error || "Failed to process your order.";
                 setCheckoutError(errorMsg);
             }
         } catch (error) {

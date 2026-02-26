@@ -58,14 +58,15 @@ export async function POST(request: Request) {
             );
         }
 
-        // 2. Prepare STK Push
-        const date = new Date();
-        const timestamp = date.getFullYear() +
-            ("0" + (date.getMonth() + 1)).slice(-2) +
-            ("0" + date.getDate()).slice(-2) +
-            ("0" + date.getHours()).slice(-2) +
-            ("0" + date.getMinutes()).slice(-2) +
-            ("0" + date.getSeconds()).slice(-2);
+        // 2. Prepare STK Push — Timestamp must be EAT (UTC+3)
+        const now = new Date();
+        const eat = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+        const timestamp = eat.getUTCFullYear() +
+            ("0" + (eat.getUTCMonth() + 1)).slice(-2) +
+            ("0" + eat.getUTCDate()).slice(-2) +
+            ("0" + eat.getUTCHours()).slice(-2) +
+            ("0" + eat.getUTCMinutes()).slice(-2) +
+            ("0" + eat.getUTCSeconds()).slice(-2);
 
         const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString("base64");
 

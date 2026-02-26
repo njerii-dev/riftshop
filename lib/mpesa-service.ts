@@ -1,5 +1,3 @@
-import { Buffer } from "buffer";
-
 export async function initiateSTKPush(phoneNumber: string, amount: number, orderId: any) {
     // 1. Validate environment variables BEFORE making any requests
     const consumerKey = process.env.MPESA_CONSUMER_KEY;
@@ -53,14 +51,16 @@ export async function initiateSTKPush(phoneNumber: string, amount: number, order
         );
     }
 
-    // 4. Generate Timestamp (YYYYMMDDHHMMSS)
-    const date = new Date();
-    const timestamp = date.getFullYear() +
-        ("0" + (date.getMonth() + 1)).slice(-2) +
-        ("0" + date.getDate()).slice(-2) +
-        ("0" + date.getHours()).slice(-2) +
-        ("0" + date.getMinutes()).slice(-2) +
-        ("0" + date.getSeconds()).slice(-2);
+    // 4. Generate Timestamp in EAT (UTC+3) as required by Safaricom (YYYYMMDDHHMMSS)
+    const now = new Date();
+    // Convert to East Africa Time (UTC+3) regardless of server timezone
+    const eat = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+    const timestamp = eat.getUTCFullYear() +
+        ("0" + (eat.getUTCMonth() + 1)).slice(-2) +
+        ("0" + eat.getUTCDate()).slice(-2) +
+        ("0" + eat.getUTCHours()).slice(-2) +
+        ("0" + eat.getUTCMinutes()).slice(-2) +
+        ("0" + eat.getUTCSeconds()).slice(-2);
 
     // 5. Generate Password
     const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString('base64');

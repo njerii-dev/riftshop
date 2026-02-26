@@ -85,11 +85,17 @@ export async function POST(request: Request) {
                 { status: 201 }
             );
         } catch (mpesaError: any) {
-            console.error("M-Pesa STK Push Error:", mpesaError.message);
+            console.error("M-Pesa STK Push Error:", {
+                message: mpesaError.message,
+                stack: mpesaError.stack,
+                orderId: order.id,
+                phone: cleanPhone,
+                amount: totalAmount,
+            });
             return NextResponse.json(
                 {
                     error: "M-Pesa payment failed",
-                    details: mpesaError.message,
+                    details: mpesaError.message || "An unexpected error occurred with the payment service.",
                 },
                 { status: 502 }
             );
