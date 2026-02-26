@@ -38,11 +38,12 @@ export async function POST(request: Request) {
                 redirectTo: `/paymentscreen?orderId=${order.id}`
             }, { status: 201 });
 
-        } catch (mpesaErr: any) {
-            console.error("FULL_ERROR_LOG:", mpesaErr);
-            // This sends the REAL error message to your screen
+        } catch (error: any) {
+            console.error("STK_PUSH_CRASH:", error);
+            // FORCE a JSON response even on crash so the Order route doesn't get 'Unexpected End of JSON'
             return NextResponse.json({
-                error: `Safaricom says: ${mpesaErr.message || "Connection Failed"}`
+                error: "Internal Crash",
+                details: error.message
             }, { status: 500 });
         }
     } catch (error: any) {
