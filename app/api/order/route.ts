@@ -19,10 +19,26 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
         }
 
-        const { productId, quantity } = body;
+        const { productId, quantity, phoneNumber } = body;
 
         if (!productId) {
             return NextResponse.json({ error: "Product ID is required" }, { status: 400 });
+        }
+
+        if (!phoneNumber) {
+            return NextResponse.json({ error: "Phone number is required for M-Pesa payment" }, { status: 400 });
+        }
+
+        // Clean the phone number: remove '+' and spaces, ensure it starts with 254
+        let cleanPhone = String(phoneNumber).replace(/[\s+\-]/g, "");
+        if (cleanPhone.startsWith("0")) {
+            cleanPhone = "254" + cleanPhone.slice(1);
+        }
+        if (!/^254\d{9}$/.test(cleanPhone)) {
+            return NextResponse.json(
+                { error: "Invalid phone number. Use format: 254XXXXXXXXX or 07XXXXXXXX" },
+                { status: 400 }
+            );
         }
 
         // 3. Find Product
@@ -44,7 +60,7 @@ export async function POST(request: Request) {
 
         try {
             const mpesaResult = await initiateSTKPush(
-                "254703704389", // Using your provided test number
+                cleanPhone,
                 totalAmount,
                 order.id
             );

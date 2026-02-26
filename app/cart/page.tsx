@@ -13,6 +13,7 @@ export default function CartPage() {
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [checkoutSuccess, setCheckoutSuccess] = useState(false);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
+    const [phoneNumber, setPhoneNumber] = useState("");
 
     const handleCheckout = async () => {
         if (status !== "authenticated") {
@@ -22,6 +23,12 @@ export default function CartPage() {
 
         setIsCheckingOut(true);
         setCheckoutError(null);
+
+        if (!phoneNumber.trim()) {
+            setCheckoutError("Please enter your M-Pesa phone number.");
+            setIsCheckingOut(false);
+            return;
+        }
 
         try {
             // Process each cart item as an order
@@ -35,6 +42,7 @@ export default function CartPage() {
                         body: JSON.stringify({
                             productId: item.productId,
                             quantity: item.quantity,
+                            phoneNumber: phoneNumber.trim(),
                         }),
                     });
 
@@ -321,6 +329,24 @@ export default function CartPage() {
                                         {checkoutError}
                                     </div>
                                 )}
+
+                                {/* M-Pesa Phone Number Input */}
+                                <div className="mb-4">
+                                    <label htmlFor="mpesa-phone" className="block text-sm font-medium text-foreground-muted mb-2">
+                                        M-Pesa Phone Number
+                                    </label>
+                                    <input
+                                        id="mpesa-phone"
+                                        type="tel"
+                                        placeholder="e.g. 0712345678"
+                                        value={phoneNumber}
+                                        onChange={(e) => setPhoneNumber(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground placeholder:text-foreground-muted/50 focus:outline-none focus:border-purple-500/50 transition-colors"
+                                    />
+                                    <p className="text-xs text-foreground-muted mt-1">
+                                        Enter the number registered with M-Pesa
+                                    </p>
+                                </div>
 
                                 <button
                                     onClick={handleCheckout}
