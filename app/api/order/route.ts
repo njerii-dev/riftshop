@@ -5,62 +5,84 @@ import { initiateSTKPush } from "@/lib/mpesa-service";
 
 export async function POST(request: Request) {
     try {
-        // Check Session
+        // 1. Check Session
         const session = await auth();
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Sign in required" }, { status: 401 });
         }
 
-        const body = await request.json();
+        // 2. Parse and validate request body
+        let body;
+        try {
+            body = await request.json();
+        } catch {
+            return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+        }
+
         const { productId, quantity } = body;
 
-        // Find Product
+        if (!productId) {
+            return NextResponse.json({ error: "Product ID is required" }, { status: 400 });
+        }
+
+        // 3. Find Product
         const product = await prisma.product.findUnique({ where: { id: productId } });
         if (!product) {
             return NextResponse.json({ error: "Product not found" }, { status: 404 });
         }
 
-        // Create Order in DB
+        // 4. Create Order in DB
         const order = await prisma.order.create({
             data: {
                 productId: product.id,
-                customerId: session.user.id
-            }
+                customerId: session.user.id,
+            },
         });
 
-        // Trigger M-Pesa
+        // 5. Trigger M-Pesa STK Push
+        const totalAmount = product.price * (quantity || 1);
+
         try {
             const mpesaResult = await initiateSTKPush(
                 "254703704389", // Using your provided test number
-                product.price * (quantity || 1),
+                totalAmount,
                 order.id
             );
 
             // Check if Safaricom rejected the request format
-            if (mpesaResult.ResponseCode !== "0") {
+            if (mpesaResult.ResponseCode && mpesaResult.ResponseCode !== "0") {
                 console.error("Safaricom Rejection:", mpesaResult);
-                return NextResponse.json({
-                    error: "M-Pesa Rejected",
-                    details: mpesaResult.errorMessage || mpesaResult.ResultDesc
-                }, { status: 400 });
+                return NextResponse.json(
+                    {
+                        error: "M-Pesa request was rejected",
+                        details: mpesaResult.CustomerMessage || mpesaResult.ResultDesc || "Unknown rejection reason",
+                    },
+                    { status: 400 }
+                );
             }
 
-            return NextResponse.json({
-                message: "STK Push Sent",
-                redirectTo: `/paymentscreen?orderId=${order.id}`
-            }, { status: 201 });
-
+            return NextResponse.json(
+                {
+                    message: "STK Push Sent",
+                    redirectTo: `/paymentscreen?orderId=${order.id}`,
+                },
+                { status: 201 }
+            );
         } catch (mpesaError: any) {
-            // This captures the "Internal Crash" details
-            console.error("STK_PUSH_FUNCTION_ERROR:", mpesaError.message);
-            return NextResponse.json({
-                error: "Internal Crash",
-                details: mpesaError.message
-            }, { status: 500 });
+            console.error("M-Pesa STK Push Error:", mpesaError.message);
+            return NextResponse.json(
+                {
+                    error: "M-Pesa payment failed",
+                    details: mpesaError.message,
+                },
+                { status: 502 }
+            );
         }
-
     } catch (globalError: any) {
         console.error("ORDER_ROUTE_ERROR:", globalError.message);
-        return NextResponse.json({ error: "Could not create order" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Could not create order. Please try again." },
+            { status: 500 }
+        );
     }
 }
