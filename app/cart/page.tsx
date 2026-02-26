@@ -46,11 +46,20 @@ export default function CartPage() {
             const failed = results.filter((r) => !r.ok);
 
             if (failed.length === 0) {
-                setCheckoutSuccess(true);
-                clearCart();
-                setTimeout(() => {
-                    router.push("/");
-                }, 2000);
+                // SUCCESS: Find the redirect URL from the first successful order
+                const redirectUrl = results[0]?.data?.redirectTo;
+
+                if (redirectUrl) {
+                    console.log("🎯 Redirecting to:", redirectUrl);
+                    clearCart();
+                    // This forces the browser to jump to the payment screen immediately
+                    window.location.href = redirectUrl;
+                } else {
+                    // Fallback if the API response is missing the link
+                    setCheckoutSuccess(true);
+                    clearCart();
+                    setTimeout(() => router.push("/"), 2000);
+                }
             } else if (failed.length < results.length) {
                 // Partial failure
                 const failedNames = failed.map((f) => f.itemName).join(", ");
@@ -73,6 +82,7 @@ export default function CartPage() {
         }
     };
 
+    // This is the "Success State" UI that shows for a split second before redirecting
     if (checkoutSuccess) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -94,10 +104,10 @@ export default function CartPage() {
                         </svg>
                     </div>
                     <h1 className="text-3xl font-bold text-foreground mb-2">
-                        Order Placed Successfully!
+                        Order Prepared!
                     </h1>
                     <p className="text-foreground-muted mb-6">
-                        Redirecting to your orders...
+                        Redirecting you to the M-Pesa payment screen...
                     </p>
                 </div>
             </div>
