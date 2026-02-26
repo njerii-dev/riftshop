@@ -29,13 +29,12 @@ export async function POST(request: Request) {
             data: {
                 productId: product.id,
                 customerId: session.user.id,
-                // Add status if your schema supports it
-                // status: "PENDING" 
             },
         });
 
         console.log(`✅ Order ${order.id} saved to database`);
 
+        // 5. Trigger M-Pesa Internal API
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://127.0.0.1:3000";
 
         try {
@@ -51,15 +50,13 @@ export async function POST(request: Request) {
                 }),
             });
 
-            // Check if the route even exists (404) or crashed (500)
             if (!mpesaRes.ok) {
                 const errorText = await mpesaRes.text();
                 console.error(`M-Pesa Route Error (${mpesaRes.status}):`, errorText);
                 throw new Error(`Internal API returned ${mpesaRes.status}`);
             }
 
-            const mpesaData = await mpesaRes.json();
-
+            // If we reach here, M-Pesa push was successful
             return NextResponse.json({
                 message: "STK Push Sent",
                 redirectTo: `/paymentscreen?orderId=${order.id}`
@@ -67,7 +64,15 @@ export async function POST(request: Request) {
 
         } catch (mpesaErr: any) {
             console.error("DETAILED_GATEWAY_ERROR:", mpesaErr.message);
+            // This returns the error back to the Cart Page
             return NextResponse.json({
-                error: `Gateway Error: ${mpesaErr.message}. Check if /api/mpesa/stkpush exists.`
+                error: `Gateway Error: ${mpesaErr.message}. Ensure your server is running.`
             }, { status: 500 });
         }
+
+    } catch (error: any) {
+        // This catches errors in Prisma or Auth
+        console.error("MAIN_ORDER_API_ERROR:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
