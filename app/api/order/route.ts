@@ -36,45 +36,38 @@ export async function POST(request: Request) {
 
         console.log(`✅ Order ${order.id} saved to database`);
 
-        // 5. TRIGGER M-PESA (Wait for response this time)
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
-        // Use your real test number or get it from session.user
-        const targetPhone = "254703704389";
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://127.0.0.1:3000";
 
         try {
+            console.log("Attempting to reach M-Pesa API at:", `${baseUrl}/api/mpesa/stkpush`);
+
             const mpesaRes = await fetch(`${baseUrl}/api/mpesa/stkpush`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    amount: Math.round(product.price * orderQuantity), // M-Pesa hates decimals
-                    phoneNumber: targetPhone,
+                    amount: Math.round(product.price * orderQuantity),
+                    phoneNumber: "254703704389",
                     orderId: order.id,
                 }),
             });
 
-            const mpesaData = await mpesaRes.json();
-
+            // Check if the route even exists (404) or crashed (500)
             if (!mpesaRes.ok) {
-                console.error("M-Pesa API rejected request:", mpesaData);
-                return NextResponse.json({
-                    error: "M-Pesa push failed. Please check your phone number and try again."
-                }, { status: 400 });
+                const errorText = await mpesaRes.text();
+                console.error(`M-Pesa Route Error (${mpesaRes.status}):`, errorText);
+                throw new Error(`Internal API returned ${mpesaRes.status}`);
             }
 
-            // SUCCESS: Send to the payment screen
+            const mpesaData = await mpesaRes.json();
+
             return NextResponse.json({
                 message: "STK Push Sent",
                 redirectTo: `/paymentscreen?orderId=${order.id}`
             }, { status: 201 });
 
-        } catch (mpesaErr) {
-            console.error("Network error triggering M-Pesa:", mpesaErr);
-            return NextResponse.json({ error: "Could not connect to payment gateway" }, { status: 500 });
+        } catch (mpesaErr: any) {
+            console.error("DETAILED_GATEWAY_ERROR:", mpesaErr.message);
+            return NextResponse.json({
+                error: `Gateway Error: ${mpesaErr.message}. Check if /api/mpesa/stkpush exists.`
+            }, { status: 500 });
         }
-
-    } catch (error: any) {
-        console.error("ORDER_API_ERROR:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-    }
-}
