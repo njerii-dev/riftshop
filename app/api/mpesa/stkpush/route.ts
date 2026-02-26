@@ -22,14 +22,15 @@ export async function POST(request: Request) {
             cache: 'no-store'
         });
 
-        const tokenData = await tokenRes.json();
-        const access_token = tokenData.access_token;
-
-        if (!access_token) {
-            console.error("Token Generation Failed:", tokenData);
-            return NextResponse.json({ error: "Invalid Consumer Key/Secret" }, { status: 401 });
+        // CHECK IF THE RESPONSE IS VALID FIRST
+        if (!tokenRes.ok) {
+            const errorText = await tokenRes.text(); // Get the raw text instead of JSON
+            console.error("Safaricom Auth Error:", errorText);
+            return NextResponse.json({ error: `Safaricom Auth Failed: ${tokenRes.status}` }, { status: tokenRes.status });
         }
 
+        const tokenData = await tokenRes.json();
+        const access_token = tokenData.access_token;
         // 2. Prepare STK Push
         // Safaricom is very strict with the timestamp format
         const date = new Date();
