@@ -48,13 +48,18 @@ export async function POST(request: Request) {
             }),
         }).catch(err => console.error("M-Pesa trigger failed:", err));
 
-        return NextResponse.json({
-            message: "Order placed successfully",
-            orderId: order.id,
-            redirectTo: `/paymentscreen?orderId=${order.id}`
-        }, { status: 201 });
+        return new Response(
+            JSON.stringify({
+                message: "REDIRECTING",
+                redirectTo: `/paymentscreen?orderId=${order.id}`
+            }),
+            {
+                status: 201,
+                headers: { "Content-Type": "application/json" },
+            }
+        );;
 
-    } catch (error: any) {
+    } catch (error: any) { // This is the part you sent me
         console.error("ORDER_API_ERROR:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
