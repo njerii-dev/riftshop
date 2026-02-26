@@ -39,10 +39,14 @@ export async function POST(request: Request) {
             }, { status: 201 });
 
         } catch (mpesaErr: any) {
-            console.error("MPESA_ERROR:", mpesaErr.message);
-            return NextResponse.json({ error: "M-Pesa Service Down" }, { status: 500 });
+            console.error("FULL_ERROR_LOG:", mpesaErr);
+            // This sends the REAL error message to your screen
+            return NextResponse.json({
+                error: `Safaricom says: ${mpesaErr.message || "Connection Failed"}`
+            }, { status: 500 });
         }
     } catch (error: any) {
+        console.error("Detailed Error:", error);
         return NextResponse.json({ error: "Order Creation Failed" }, { status: 500 });
     }
 }
