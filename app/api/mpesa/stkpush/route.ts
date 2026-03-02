@@ -5,74 +5,59 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { amount, phoneNumber, orderId } = body;
 
-        // Validate environment variables
+        // 1. Validate Environment Variables
         const consumerKey = process.env.MPESA_CONSUMER_KEY;
         const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
         const shortCode = process.env.MPESA_SHORTCODE || "174379";
         const passkey = process.env.MPESA_PASSKEY;
 
         if (!consumerKey || !consumerSecret || !passkey) {
-            console.error("Missing M-Pesa environment variables");
+            console.error("❌ MISSING CONFIG: Check your .env file for MPESA keys.");
             return NextResponse.json(
-                { error: "Payment service is not configured. Contact support." },
+                { error: "Payment service is not configured correctly." },
                 { status: 500 }
             );
         }
 
-        const cleanPhone = String(phoneNumber).replace(/\+/g, "");
+        // 2. Robust Phone Number Formatting (Convert 07... or +254... to 254...)
+        let cleanPhone = String(phoneNumber).replace(/\D/g, ""); // Remove non-digits
+        if (cleanPhone.startsWith("0")) {
+            cleanPhone = "254" + cleanPhone.substring(1);
+        } else if (cleanPhone.startsWith("7") || cleanPhone.startsWith("1")) {
+            cleanPhone = "254" + cleanPhone;
+        }
 
-        // 1. Generate Access Token
-        const url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
-        const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
+        // 3. Generate Access Token
+        const authUrl = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
+        const authHeader = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
 
-        const tokenRes = await fetch(url, {
-            headers: { Authorization: `Basic ${auth}` },
+        const tokenRes = await fetch(authUrl, {
+            headers: { Authorization: `Basic ${authHeader}` },
             cache: 'no-store'
         });
 
         if (!tokenRes.ok) {
-            const errorText = await tokenRes.text();
-            console.error("Safaricom Auth Error:", tokenRes.status, errorText);
-            return NextResponse.json(
-                { error: `M-Pesa authentication failed (HTTP ${tokenRes.status})` },
-                { status: 502 }
-            );
+            const errorData = await tokenRes.text();
+            console.error("❌ SAFARICOM AUTH ERROR:", errorData);
+            return NextResponse.json({ error: "M-Pesa authentication failed." }, { status: 502 });
         }
 
-        let tokenData;
-        try {
-            tokenData = await tokenRes.json();
-        } catch {
-            return NextResponse.json(
-                { error: "M-Pesa returned an invalid authentication response" },
-                { status: 502 }
-            );
-        }
+        const { access_token } = await tokenRes.json();
 
-        const access_token = tokenData.access_token;
-        if (!access_token) {
-            console.error("No access token in response:", tokenData);
-            return NextResponse.json(
-                { error: "M-Pesa authentication failed. Check your credentials." },
-                { status: 502 }
-            );
-        }
-
-        // 2. Prepare STK Push — Timestamp must be EAT (UTC+3)
-        const now = new Date();
-        const eat = new Date(now.getTime() + 3 * 60 * 60 * 1000);
-        const timestamp = eat.getUTCFullYear() +
-            ("0" + (eat.getUTCMonth() + 1)).slice(-2) +
-            ("0" + eat.getUTCDate()).slice(-2) +
-            ("0" + eat.getUTCHours()).slice(-2) +
-            ("0" + eat.getUTCMinutes()).slice(-2) +
-            ("0" + eat.getUTCSeconds()).slice(-2);
+        // 4. Prepare Timestamp & Password
+        // Safaricom expects YYYYMMDDHHMMSS
+        const timestamp = new Date().toISOString()
+            .replace(/[^0-9]/g, '')
+            .slice(0, 14);
 
         const password = Buffer.from(`${shortCode}${passkey}${timestamp}`).toString("base64");
 
+        // 5. Setup Callback URL
+        // Priority: .env CALLBACK_URL > NEXT_PUBLIC_APP_URL > Localhost
         const callbackUrl = process.env.CALLBACK_URL
-            || `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/mpesa/callback`;
+            || `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-ngrok-url.ngrok-free.app'}/api/mpesa/callback`;
 
+        // 6. Initiate STK Push
         const stkUrl = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
 
         const res = await fetch(stkUrl, {
@@ -92,36 +77,27 @@ export async function POST(request: Request) {
                 PhoneNumber: cleanPhone,
                 CallBackURL: callbackUrl,
                 AccountReference: `Order${orderId || "123"}`,
-                TransactionDesc: "Payment",
+                TransactionDesc: "Payment for Order",
             }),
         });
 
+        const data = await res.json();
+
         if (!res.ok) {
-            const errorText = await res.text();
-            console.error("STK Push HTTP Error:", res.status, errorText);
+            console.error("❌ STK PUSH REJECTED:", data);
             return NextResponse.json(
-                { error: `M-Pesa STK Push failed (HTTP ${res.status})` },
-                { status: 502 }
+                { error: data.errorMessage || "STK Push failed" },
+                { status: res.status }
             );
         }
 
-        let data;
-        try {
-            data = await res.json();
-        } catch {
-            return NextResponse.json(
-                { error: "M-Pesa returned an invalid STK Push response" },
-                { status: 502 }
-            );
-        }
-
-        console.log("Safaricom Response:", data);
+        console.log("✅ STK PUSH TRIGGERED:", data);
         return NextResponse.json(data);
 
     } catch (error: any) {
-        console.error("Detailed STK Push Error:", error);
+        console.error("🔥 INTERNAL SERVER ERROR:", error);
         return NextResponse.json(
-            { error: error.message || "STK Push Failed" },
+            { error: "An unexpected error occurred during payment processing." },
             { status: 500 }
         );
     }
