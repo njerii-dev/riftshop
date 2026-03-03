@@ -200,7 +200,7 @@ export default function CartPage() {
                                             Sold by {item.sellerEmail}
                                         </p>
                                         <p className="text-xl font-bold gradient-text">
-                                            ${item.price.toFixed(2)}
+                                            KSh {item.price.toFixed(2)}
                                         </p>
 
                                         {/* Quantity Controls */}
@@ -284,7 +284,7 @@ export default function CartPage() {
                                             Item Total
                                         </p>
                                         <p className="text-xl font-bold text-foreground">
-                                            ${(item.price * item.quantity).toFixed(2)}
+                                            KSh {(item.price * item.quantity).toFixed(2)}
                                         </p>
                                     </div>
                                 </div>
@@ -301,7 +301,7 @@ export default function CartPage() {
                                 <div className="space-y-4 mb-6">
                                     <div className="flex justify-between text-foreground-muted">
                                         <span>Subtotal ({items.reduce((acc, i) => acc + i.quantity, 0)} items)</span>
-                                        <span>${getTotal().toFixed(2)}</span>
+                                        <span>KSh {getTotal().toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-foreground-muted">
                                         <span>Shipping</span>
@@ -319,7 +319,7 @@ export default function CartPage() {
                                             Total
                                         </span>
                                         <span className="text-2xl font-bold gradient-text">
-                                            ${getTotal().toFixed(2)}
+                                            KSh {getTotal().toFixed(2)}
                                         </span>
                                     </div>
                                 </div>

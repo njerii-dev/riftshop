@@ -40,7 +40,7 @@ export default async function ProductDescriptionPage({
 
                     <div>
                         <h1 className="text-4xl font-bold mb-2">{product.name}</h1>
-                        <p className="text-2xl font-bold text-purple-400 mb-6">${product.price.toFixed(2)}</p>
+                        <p className="text-2xl font-bold text-purple-400 mb-6">KSh {product.price.toFixed(2)}</p>
 
                         <div className="bg-white/5 p-4 rounded-xl border border-white/10 mb-6">
                             <h3 className="text-sm font-semibold text-gray-400 uppercase mb-2">Details</h3>

@@ -159,7 +159,7 @@ export default async function AdminDashboard() {
               <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
               <div className="relative">
                 <p className="text-purple-200 text-sm font-medium mb-1">Total Revenue</p>
-                <h3 className="text-3xl font-bold">${totalRevenue.toFixed(2)}</h3>
+                <h3 className="text-3xl font-bold">KSh {totalRevenue.toFixed(2)}</h3>
                 <p className="text-purple-200 text-xs mt-2 flex items-center gap-1">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -226,7 +226,7 @@ export default async function AdminDashboard() {
               <h3 className="text-2xl font-bold text-foreground">{orderCount}</h3>
               <p className="text-foreground-muted text-sm">Total Orders</p>
               <p className="mt-3 text-xs text-foreground-muted">
-                Avg. ${orderCount > 0 ? (totalRevenue / orderCount).toFixed(2) : '0.00'} / order
+                Avg. KSh {orderCount > 0 ? (totalRevenue / orderCount).toFixed(2) : '0.00'} / order
               </p>
             </div>
           </div>
@@ -268,7 +268,7 @@ export default async function AdminDashboard() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold gradient-text">${order.product.price.toFixed(2)}</p>
+                          <p className="font-bold gradient-text">KSh {order.product.price.toFixed(2)}</p>
                           <p className="text-xs text-foreground-muted">
                             {new Date(order.createdAt).toLocaleDateString('en-US', {
                               month: 'short',
@@ -354,7 +354,7 @@ export default async function AdminDashboard() {
                     <h3 className="font-medium text-foreground text-sm truncate">{product.name}</h3>
                     <p className="text-xs text-foreground-muted truncate mb-2">{product.seller.email}</p>
                     <div className="flex items-center justify-between">
-                      <span className="font-bold gradient-text">${product.price.toFixed(2)}</span>
+                      <span className="font-bold gradient-text">KSh {product.price.toFixed(2)}</span>
                       <span className="text-xs text-foreground-muted">{product.orders.length} sold</span>
                     </div>
                   </div>

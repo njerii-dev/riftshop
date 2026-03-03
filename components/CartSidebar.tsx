@@ -165,7 +165,7 @@ export default function CartSidebar() {
                                             by {item.sellerEmail}
                                         </p>
                                         <p className="text-lg font-bold gradient-text mt-1">
-                                            ${item.price.toFixed(2)}
+                                            KSh {item.price.toFixed(2)}
                                         </p>
 
                                         {/* Quantity Controls */}
@@ -254,7 +254,7 @@ export default function CartSidebar() {
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-foreground-muted">Subtotal</span>
                             <span className="text-2xl font-bold gradient-text">
-                                ${getTotal().toFixed(2)}
+                                KSh {getTotal().toFixed(2)}
                             </span>
                         </div>
 

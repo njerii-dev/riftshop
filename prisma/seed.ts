@@ -21,12 +21,12 @@ async function main() {
     })
 
     const products = [
-        { id: "p1", name: "Iphone 13 pro", price: 99.99, description: "Blue 6.1 inch iphone 13 with Aluminum edge", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988143/Screenshot_2026-02-13_160332_p80mb1.png" },
-        { id: "p2", name: "Samsung Tv", price: 149.50, description: "42 inch Samsung TV", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988154/Screenshot_2026-02-13_160416_bwtlp9.png" },
-        { id: "p3", name: "Think pad lenovo", price: 75.00, description: "Black think pad with 4gb ram", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988165/Screenshot_2026-02-13_160531_mifzlg.png" },
-        { id: "p4", name: "Vintage Camera", price: 200.00, description: "A grey vintage camera with 6gb storage", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988176/Screenshot_2026-02-13_160618_j4nwey.png" },
-        { id: "p5", name: "Handmade leather wallet", price: 120.00, description: "Brown handmade leather wallet", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988188/Screenshot_2026-02-13_160711_tvgjig.png" },
-        { id: "p6", name: "Wireless earpods", price: 310.00, description: "Black wireless earpods", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988204/Screenshot_2026-02-13_160751_qrggex.png" }
+        { id: "p1", name: "Iphone 13 pro", price: 1, description: "Blue 6.1 inch iphone 13 with Aluminum edge", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988143/Screenshot_2026-02-13_160332_p80mb1.png" },
+        { id: "p2", name: "Samsung Tv", price: 1, description: "42 inch Samsung TV", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988154/Screenshot_2026-02-13_160416_bwtlp9.png" },
+        { id: "p3", name: "Think pad lenovo", price: 1, description: "Black think pad with 4gb ram", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988165/Screenshot_2026-02-13_160531_mifzlg.png" },
+        { id: "p4", name: "Vintage Camera", price: 1, description: "A grey vintage camera with 6gb storage", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988176/Screenshot_2026-02-13_160618_j4nwey.png" },
+        { id: "p5", name: "Handmade leather wallet", price: 1, description: "Brown handmade leather wallet", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988188/Screenshot_2026-02-13_160711_tvgjig.png" },
+        { id: "p6", name: "Wireless earpods", price: 1, description: "Black wireless earpods", imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988204/Screenshot_2026-02-13_160751_qrggex.png" }
     ]
 
     for (const p of products) {

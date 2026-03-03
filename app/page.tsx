@@ -9,7 +9,7 @@ export default async function Marketplace() {
     {
       id: "p1",
       name: "Iphone 13 pro",
-      price: 99.99,
+      price: 1,
       description: "Blue 6.1 inch iphone 13 with Aluminum edge",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988143/Screenshot_2026-02-13_160332_p80mb1.png",
       seller: { email: "seller@riftshop.com" },
@@ -18,7 +18,7 @@ export default async function Marketplace() {
     {
       id: "p2",
       name: "Samsung Tv",
-      price: 149.50,
+      price: 1,
       description: "42 inch Samsung TV",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988154/Screenshot_2026-02-13_160416_bwtlp9.png",
       seller: { email: "seller@riftshop.com" },
@@ -27,7 +27,7 @@ export default async function Marketplace() {
     {
       id: "p3",
       name: "Think pad lenovo",
-      price: 75.00,
+      price: 1,
       description: "Black think pad with 4gb ram",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988165/Screenshot_2026-02-13_160531_mifzlg.png",
       seller: { email: "seller@riftshop.com" },
@@ -36,7 +36,7 @@ export default async function Marketplace() {
     {
       id: "p4",
       name: "Vintage Camera",
-      price: 200.00,
+      price: 1,
       description: "A grey vintage camera with 6gb storage",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988176/Screenshot_2026-02-13_160618_j4nwey.png",
       seller: { email: "seller@riftshop.com" },
@@ -45,7 +45,7 @@ export default async function Marketplace() {
     {
       id: "p5",
       name: "Handmade leather wallet",
-      price: 120.00,
+      price: 1,
       description: "Brown handmade leather wallet with 7 card slots",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988188/Screenshot_2026-02-13_160711_tvgjig.png",
       seller: { email: "seller@riftshop.com" },
@@ -54,7 +54,7 @@ export default async function Marketplace() {
     {
       id: "p6",
       name: "Wireless earpods",
-      price: 310.00,
+      price: 1,
       description: "Black wireless earpods with 24 hour battery life",
       imageUrl: "https://res.cloudinary.com/dbr5o599o/image/upload/v1770988204/Screenshot_2026-02-13_160751_qrggex.png",
       seller: { email: "seller@riftshop.com" },
@@ -89,7 +89,7 @@ export default async function Marketplace() {
                   <p className="text-gray-400 text-sm mb-4 line-clamp-2">{product.description}</p>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-cyan-400">${product.price.toFixed(2)}</span>
+                    <span className="text-2xl font-bold text-cyan-400">KSh {product.price.toFixed(2)}</span>
                     <AddToCartButton
                       productId={product.id}
                       productName={product.name}

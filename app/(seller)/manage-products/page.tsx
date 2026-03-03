@@ -56,7 +56,7 @@ export default async function ManageProductsPage() {
                                 )}
                                 <div className="p-5">
                                     <h3 className="text-lg font-bold truncate">{product.name}</h3>
-                                    <p className="text-purple-400 font-mono mb-4">${product.price}</p>
+                                    <p className="text-purple-400 font-mono mb-4">KSh {product.price}</p>
 
                                     <div className="flex gap-2">
                                         <Link

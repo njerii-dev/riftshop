@@ -91,16 +91,16 @@ export default async function ProfilePage() {
                 <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
                     <div className="flex items-center gap-3 mb-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${user?.role === 'ADMIN' ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
-                                user?.role === 'SELLER' ? 'bg-gradient-to-br from-cyan-500 to-blue-600' :
-                                    'bg-gradient-to-br from-green-500 to-emerald-600'
+                            user?.role === 'SELLER' ? 'bg-gradient-to-br from-cyan-500 to-blue-600' :
+                                'bg-gradient-to-br from-green-500 to-emerald-600'
                             }`}>
                             {user?.email?.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{user?.email}</p>
                             <span className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full ${user?.role === 'ADMIN' ? 'bg-amber-100 text-amber-700' :
-                                    user?.role === 'SELLER' ? 'bg-cyan-100 text-cyan-700' :
-                                        'bg-green-100 text-green-700'
+                                user?.role === 'SELLER' ? 'bg-cyan-100 text-cyan-700' :
+                                    'bg-green-100 text-green-700'
                                 }`}>
                                 {user?.role}
                             </span>
@@ -126,8 +126,8 @@ export default async function ProfilePage() {
                         <div className="relative -mt-20">
                             <div className="flex flex-col sm:flex-row sm:items-end gap-6">
                                 <div className={`w-32 h-32 rounded-2xl flex items-center justify-center text-5xl font-bold text-white border-4 border-background shadow-xl ${user?.role === 'ADMIN' ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
-                                        user?.role === 'SELLER' ? 'bg-gradient-to-br from-cyan-500 to-blue-600' :
-                                            'bg-gradient-to-br from-green-500 to-emerald-600'
+                                    user?.role === 'SELLER' ? 'bg-gradient-to-br from-cyan-500 to-blue-600' :
+                                        'bg-gradient-to-br from-green-500 to-emerald-600'
                                     }`}>
                                     {user?.email?.charAt(0).toUpperCase()}
                                 </div>
@@ -135,8 +135,8 @@ export default async function ProfilePage() {
                                     <h1 className="text-3xl font-bold text-foreground">{user?.email}</h1>
                                     <div className="flex items-center gap-3 mt-2">
                                         <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${user?.role === 'ADMIN' ? 'bg-amber-100 text-amber-700' :
-                                                user?.role === 'SELLER' ? 'bg-cyan-100 text-cyan-700' :
-                                                    'bg-green-100 text-green-700'
+                                            user?.role === 'SELLER' ? 'bg-cyan-100 text-cyan-700' :
+                                                'bg-green-100 text-green-700'
                                             }`}>
                                             {user?.role}
                                         </span>
@@ -176,7 +176,7 @@ export default async function ProfilePage() {
                                 </div>
                                 <div>
                                     <p className="text-sm text-foreground-muted">Total Spent</p>
-                                    <h3 className="text-2xl font-bold gradient-text">${totalSpent.toFixed(2)}</h3>
+                                    <h3 className="text-2xl font-bold gradient-text">KSh {totalSpent.toFixed(2)}</h3>
                                 </div>
                             </div>
                         </div>
@@ -238,7 +238,7 @@ export default async function ProfilePage() {
                                                 </p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-xl font-bold gradient-text">${order.product.price.toFixed(2)}</p>
+                                                <p className="text-xl font-bold gradient-text">KSh {order.product.price.toFixed(2)}</p>
                                                 <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
                                                     Completed
                                                 </span>
