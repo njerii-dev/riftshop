@@ -36,10 +36,23 @@ model Product {
 }
 
 model Order {
-  id         String   @id @default(cuid())
-  productId  String
-  customerId String
-  product    Product  @relation(fields: [productId], references: [id])
-  customer   User     @relation(fields: [customerId], references: [id])
-  createdAt  DateTime @default(now())
+  id                String   @id @default(cuid())
+  productId         String
+  customerId        String
+  status            String?  @default("PENDING")
+  checkoutRequestId String?  @unique
+  mpesaReceipt      String?
+  product           Product  @relation(fields: [productId], references: [id])
+  customer          User     @relation(fields: [customerId], references: [id])
+  createdAt         DateTime @default(now())
+}
+
+model mpesa_payments {
+  id                  Int       @id @default(autoincrement())
+  checkout_request_id String?   @unique
+  phone_number        String?
+  amount              Decimal?  @db.Decimal(10, 2)
+  status              String?   @default("PENDING")
+  mpesa_receipt       String?
+  created_at          DateTime? @default(now()) @db.Timestamp(6)
 }
