@@ -1,39 +1,34 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma"; // Or your Neon connection client
 
 export async function POST(req: Request) {
     try {
-        const data = await req.json();
+        const body = await req.json();
+        const callbackData = body.Body.stkCallback;
 
-        console.log("🔔 M-Pesa Callback Received!");
-        console.dir(data, { depth: null });
+        // ResultCode 0 means SUCCESS
+        if (callbackData.ResultCode === 0) {
+            const checkoutID = callbackData.CheckoutRequestID;
 
-        const stkCallback = data.Body?.stkCallback;
+            // Update the status in your Neon database
+            await prisma.order.update({
+                where: { checkoutRequestId: checkoutID }, // Ensure you save this ID when starting the push
+                data: { status: "COMPLETED" },
+            });
 
-        if (!stkCallback) {
-            return NextResponse.json({ error: "Invalid Callback Data" }, { status: 400 });
-        }
-
-        const resultCode = stkCallback.ResultCode;
-        const resultDesc = stkCallback.ResultDesc;
-        const merchantRequestID = stkCallback.MerchantRequestID;
-        const checkoutRequestID = stkCallback.CheckoutRequestID;
-
-        // ResultCode 0 = Success
-        if (resultCode === 0) {
-            const metadata = stkCallback.CallbackMetadata.Item;
-            const amount = metadata.find((item: any) => item.Name === "Amount")?.Value;
-            const receipt = metadata.find((item: any) => item.Name === "MpesaReceiptNumber")?.Value;
-            const phone = metadata.find((item: any) => item.Name === "PhoneNumber")?.Value;
-
-            console.log(`✅ Success! Receipt: ${receipt}, Amount: ${amount}, Phone: ${phone}`);
-
+            console.log("Neon Database updated: COMPLETED");
         } else {
-            console.log(`❌ Payment Not Successful. Code: ${resultCode}, Message: ${resultDesc}`);
+            // Handle cancelled/failed payments
+            const checkoutID = callbackData.CheckoutRequestID;
+            await prisma.order.update({
+                where: { checkoutRequestId: checkoutID },
+                data: { status: "FAILED" },
+            });
         }
-        return NextResponse.json({ ResultCode: 0, ResultDesc: "Accepted" });
 
-    } catch (error: any) {
-        console.error("🔥 Callback Processing Error:", error);
-        return NextResponse.json({ ResultCode: 1, ResultDesc: "Internal Error" });
+        return NextResponse.json({ message: "Received" });
+    } catch (err) {
+        console.error("Callback Error:", err);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

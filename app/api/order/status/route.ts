@@ -36,7 +36,10 @@ export async function GET(request: Request) {
         }
 
         // Ensure the user can only see their own orders
-        return NextResponse.json({ order });
+        return NextResponse.json({
+            status: order.status,
+            order: order
+        });
     } catch (error: any) {
         console.error("ORDER_STATUS_ERROR:", error.message);
         return NextResponse.json(

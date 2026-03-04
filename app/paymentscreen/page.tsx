@@ -14,20 +14,22 @@ function PaymentContent() {
 
         const pollInterval = setInterval(async () => {
             try {
-                const response = await fetch(`/api/check-payment?orderId=${orderId}`);
+                // Updated URL to match your folder structure
+                const response = await fetch(`/api/mpesa/status?orderId=${orderId}`);
                 const data = await response.json();
 
-                // Match this string to exactly what your DB returns
                 if (data.status === "COMPLETED" || data.status === "PAID") {
-                    setStatus("Payment made successfully!");
+                    setStatus("Payment made successfully! 🎉");
                     setIsPaid(true);
-                    clearInterval(pollInterval); // This works now!
+                    clearInterval(pollInterval);
+                } else if (data.status === "FAILED") {
+                    setStatus("Payment failed. Please try again.");
+                    clearInterval(pollInterval);
                 }
             } catch (error) {
                 console.error("Error checking payment:", error);
             }
         }, 3000);
-
         return () => clearInterval(pollInterval);
     }, [orderId]);
 
