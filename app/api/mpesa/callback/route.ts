@@ -1,34 +1,28 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma"; // Or your Neon connection client
+import { prisma } from "@/lib/prisma";
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
     try {
-        const body = await req.json();
-        const callbackData = body.Body.stkCallback;
+        const body = await request.json();
+        const { CheckoutRequestID, ResultCode, ResultDesc } = body.Body.stkCallback;
 
-        // ResultCode 0 means SUCCESS
-        if (callbackData.ResultCode === 0) {
-            const checkoutID = callbackData.CheckoutRequestID;
+        console.log(`Event Received for ID: ${CheckoutRequestID}`);
 
-            // Update the status in your Neon database
+        if (ResultCode === 0) {
             await prisma.order.update({
-                where: { checkoutRequestId: checkoutID }, // Ensure you save this ID when starting the push
-                data: { status: "COMPLETED" },
+                where: { checkoutRequestId: CheckoutRequestID },
+                data: { status: "COMPLETED" }
             });
-
-            console.log("Neon Database updated: COMPLETED");
+            return NextResponse.json({ message: "Success received" });
         } else {
-            // Handle cancelled/failed payments
-            const checkoutID = callbackData.CheckoutRequestID;
             await prisma.order.update({
-                where: { checkoutRequestId: checkoutID },
-                data: { status: "FAILED" },
+                where: { checkoutRequestId: CheckoutRequestID },
+                data: { status: "FAILED" }
             });
+            return NextResponse.json({ message: "Failure recorded" });
         }
-
-        return NextResponse.json({ message: "Received" });
-    } catch (err) {
-        console.error("Callback Error:", err);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    } catch (error) {
+        console.error("Callback Listener Error:", error);
+        return NextResponse.json({ error: "Internal Error" }, { status: 500 });
     }
 }

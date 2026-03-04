@@ -1,8 +1,4 @@
 const SAFARICOM_SANDBOX_URL = "https://sandbox.safaricom.co.ke";
-
-/**
- * Reads and validates M-Pesa environment variables.
- */
 function getMpesaConfig() {
     const consumerKey = process.env.MPESA_CONSUMER_KEY;
     const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
@@ -18,10 +14,6 @@ function getMpesaConfig() {
 
     return { consumerKey, consumerSecret, passkey, shortCode, callbackUrl };
 }
-
-/**
- * Generates the Safaricom timestamp (YYYYMMDDHHmmss).
- */
 function getSafaricomTimestamp(): string {
     const now = new Date();
     const eat = new Intl.DateTimeFormat("en-KE", {
@@ -39,10 +31,6 @@ function getSafaricomTimestamp(): string {
     for (const p of eat) { parts[p.type] = p.value; }
     return `${parts.year}${parts.month}${parts.day}${parts.hour}${parts.minute}${parts.second}`;
 }
-
-/**
- * Fetches an OAuth access token from Safaricom.
- */
 async function getAccessToken(consumerKey: string, consumerSecret: string): Promise<string> {
     const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
     const res = await fetch(`${SAFARICOM_SANDBOX_URL}/oauth/v1/generate?grant_type=client_credentials`, {
@@ -54,10 +42,6 @@ async function getAccessToken(consumerKey: string, consumerSecret: string): Prom
     const data = await res.json();
     return data.access_token;
 }
-
-/**
- * Normalises phone numbers to 254XXXXXXXXX.
- */
 export function normalizeKenyanPhone(raw: string): string {
     let phone = String(raw).replace(/[\s+\-]/g, "");
     if (phone.startsWith("0")) phone = "254" + phone.slice(1);
@@ -66,10 +50,6 @@ export function normalizeKenyanPhone(raw: string): string {
     if (!/^254\d{9}$/.test(phone)) throw new Error("Invalid Kenyan phone number.");
     return phone;
 }
-
-/**
- * Initiates an M-Pesa STK Push.
- */
 export async function initiateSTKPush(
     phoneNumber: string,
     amount: number,
@@ -106,8 +86,6 @@ export async function initiateSTKPush(
     });
 
     const result = await res.json();
-
-    // CRITICAL: Log this so you can see it in Vercel/Terminal
     console.log("Safaricom API Raw Result:", JSON.stringify(result));
 
     if (!res.ok) {

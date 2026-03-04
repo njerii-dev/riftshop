@@ -5,13 +5,10 @@ import { initiateSTKPush, normalizeKenyanPhone } from "@/lib/mpesa-service";
 
 export async function POST(request: Request) {
     try {
-        // 1. Authenticate User
         const session = await auth();
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Sign in required" }, { status: 401 });
         }
-
-        // 2. Parse Request Body
         const body = await request.json();
         const { productId, quantity, phoneNumber } = body;
 
@@ -19,24 +16,20 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        const cleanPhone = normalizeKenyanPhone(phoneNumber);
-
-        // 3. Get Product Details
+        const cleanPhone = normalizeKenyanPhone(phoneNumber)
         const product = await prisma.product.findUnique({ where: { id: productId } });
         if (!product) {
             return NextResponse.json({ error: "Product not found" }, { status: 404 });
         }
-
-        // 4. Create Initial Order in Neon
         const order = await prisma.order.create({
             data: {
                 productId: product.id,
                 customerId: session.user.id,
-                status: "STARTING" // Mark as starting
+                status: "STARTING"
             },
         });
 
-        // 5. Trigger M-Pesa STK Push
+        // 5.  M-Pesa STK Push
         const totalAmount = product.price * (quantity || 1);
 
         try {
@@ -47,11 +40,7 @@ export async function POST(request: Request) {
                 totalAmount,
                 order.id
             );
-
-            // LOG THE RAW RESULT (Check this in your Vercel/Terminal logs!)
             console.log("Safaricom API Response:", JSON.stringify(mpesaResult));
-
-            // Check if STK prompt was actually sent to the phone
             if (String(mpesaResult.ResponseCode) === "0") {
                 const checkoutID = mpesaResult.CheckoutRequestID;
 
@@ -60,8 +49,6 @@ export async function POST(request: Request) {
                 }
 
                 console.log(`[NEON] Attempting to save CheckoutID: ${checkoutID}`);
-
-                // CRITICAL: Force the update and wait for it
                 const updatedOrder = await prisma.order.update({
                     where: { id: order.id },
                     data: {
@@ -75,7 +62,7 @@ export async function POST(request: Request) {
                 return NextResponse.json({
                     message: "STK Push Sent",
                     orderId: order.id,
-                    checkoutID: checkoutID, // Returning this so you can verify it on frontend
+                    checkoutID: checkoutID,
                     redirectTo: `/paymentscreen?orderId=${order.id}`,
                 }, { status: 201 });
 

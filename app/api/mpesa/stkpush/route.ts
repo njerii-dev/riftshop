@@ -1,16 +1,5 @@
 import { NextResponse } from "next/server";
 import { initiateSTKPush, normalizeKenyanPhone } from "@/lib/mpesa-service";
-
-/**
- * POST /api/mpesa/stkpush
- *
- * Direct STK Push endpoint. Accepts { phoneNumber, amount, orderId }
- * and delegates to the shared mpesa-service.
- *
- * NOTE: The primary checkout flow goes through /api/order (which also
- * calls initiateSTKPush). This endpoint is available as a standalone
- * trigger if needed.
- */
 export async function POST(request: Request) {
     try {
         const body = await request.json();
@@ -22,8 +11,6 @@ export async function POST(request: Request) {
                 { status: 400 }
             );
         }
-
-        // Normalise phone — will throw if invalid
         let cleanPhone: string;
         try {
             cleanPhone = normalizeKenyanPhone(phoneNumber);
