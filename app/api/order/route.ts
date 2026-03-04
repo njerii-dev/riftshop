@@ -53,18 +53,26 @@ export async function POST(request: Request) {
         const totalAmount = product.price * (quantity || 1);
 
         try {
+            console.log("Initiating STK Push for Order:", order.id);
             const mpesaResult = await initiateSTKPush(
                 cleanPhone,
                 totalAmount,
                 order.id
             );
-            if (mpesaResult.ResponseCode === "0") {
-                await prisma.order.update({
+            console.log("Safaricom Response:", mpesaResult);
+            if (String(mpesaResult.ResponseCode) === "0") {
+                const checkoutID = mpesaResult.CheckoutRequestID;
+
+                console.log("Saving CheckoutID to Neon:", checkoutID);
+                const updated = await prisma.order.update({
                     where: { id: order.id },
                     data: {
-                        checkoutRequestId: mpesaResult.CheckoutRequestID
+                        checkoutRequestId: checkoutID,
+                        status: "PENDING"
                     }
                 });
+
+                console.log("Database Update Successful for Order:", updated.id);
 
                 return NextResponse.json(
                     {
@@ -74,19 +82,16 @@ export async function POST(request: Request) {
                     { status: 201 }
                 );
             } else {
-                console.error("Safaricom Rejection:", mpesaResult);
+                console.error("Safaricom rejected the request:", mpesaResult);
                 return NextResponse.json(
-                    {
-                        error: "M-Pesa request was rejected",
-                        details: mpesaResult.CustomerMessage || "Unknown rejection reason",
-                    },
+                    { error: "M-Pesa request rejected", details: mpesaResult.CustomerMessage },
                     { status: 400 }
                 );
             }
         } catch (mpesaError: any) {
-            console.error("M-Pesa STK Push Error:", mpesaError.message);
+            console.error("STK Push or DB Update Failed:", mpesaError);
             return NextResponse.json(
-                { error: "M-Pesa payment failed", details: mpesaError.message },
+                { error: "Payment failed", details: mpesaError.message },
                 { status: 502 }
             );
         }
