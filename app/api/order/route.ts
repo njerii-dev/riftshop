@@ -26,10 +26,8 @@ export async function POST(request: Request) {
         }
 
         if (!phoneNumber) {
-            return NextResponse.json({ error: "Phone number is required for M-Pesa payment" }, { status: 400 });
+            return NextResponse.json({ error: "Phone number is required" }, { status: 400 });
         }
-
-        // Normalise phone number using shared helper
         let cleanPhone: string;
         try {
             cleanPhone = normalizeKenyanPhone(phoneNumber);
@@ -60,46 +58,42 @@ export async function POST(request: Request) {
                 totalAmount,
                 order.id
             );
+            if (mpesaResult.ResponseCode === "0") {
+                await prisma.order.update({
+                    where: { id: order.id },
+                    data: {
+                        checkoutRequestId: mpesaResult.CheckoutRequestID
+                    }
+                });
 
-            // Check if Safaricom rejected the request format
-            if (mpesaResult.ResponseCode && mpesaResult.ResponseCode !== "0") {
+                return NextResponse.json(
+                    {
+                        message: "STK Push Sent",
+                        redirectTo: `/paymentscreen?orderId=${order.id}`,
+                    },
+                    { status: 201 }
+                );
+            } else {
                 console.error("Safaricom Rejection:", mpesaResult);
                 return NextResponse.json(
                     {
                         error: "M-Pesa request was rejected",
-                        details: mpesaResult.CustomerMessage || mpesaResult.ResultDesc || "Unknown rejection reason",
+                        details: mpesaResult.CustomerMessage || "Unknown rejection reason",
                     },
                     { status: 400 }
                 );
             }
-
-            return NextResponse.json(
-                {
-                    message: "STK Push Sent",
-                    redirectTo: `/paymentscreen?orderId=${order.id}`,
-                },
-                { status: 201 }
-            );
         } catch (mpesaError: any) {
-            console.error("M-Pesa STK Push Error:", {
-                message: mpesaError.message,
-                stack: mpesaError.stack,
-                orderId: order.id,
-                phone: cleanPhone,
-                amount: totalAmount,
-            });
+            console.error("M-Pesa STK Push Error:", mpesaError.message);
             return NextResponse.json(
-                {
-                    error: "M-Pesa payment failed",
-                    details: mpesaError.message || "An unexpected error occurred with the payment service.",
-                },
+                { error: "M-Pesa payment failed", details: mpesaError.message },
                 { status: 502 }
             );
         }
     } catch (globalError: any) {
         console.error("ORDER_ROUTE_ERROR:", globalError.message);
         return NextResponse.json(
-            { error: "Could not create order. Please try again." },
+            { error: "Could not create order." },
             { status: 500 }
         );
     }
