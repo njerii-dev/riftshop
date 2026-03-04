@@ -57,6 +57,16 @@ export async function POST(request: Request) {
                     }
                 });
 
+                // Create initial mpesa_payments record
+                await prisma.mpesa_payments.create({
+                    data: {
+                        checkout_request_id: checkoutID,
+                        phone_number: cleanPhone,
+                        amount: totalAmount,
+                        status: "PENDING",
+                    }
+                });
+
                 console.log(`[SUCCESS] Database updated for ${updatedOrder.id}`);
 
                 return NextResponse.json({
