@@ -1,39 +1,39 @@
 # RiftShop
 
-Modern e-commerce web application with a responsive and user-friendly shopping experience.
-
----
+RiftShop is a modern e-commerce web application designed to provide a seamless online shopping experience through responsive design, intuitive navigation, and optimized performance.
 
 ## 🚀 Features
 
-- Responsive modern UI
-- Product showcase
-- Mobile-friendly design
-- Smooth navigation
-- Fast deployment
+- Responsive and mobile-friendly design
+- Product browsing experience
+- Modern user interface
+- Fast loading and optimized performance
+- User-focused shopping experience
 
----
+## 🛠️ Technologies Used
 
-## 🛠️ Tech Stack
-
+- Next.js
 - React
 - JavaScript
 - Tailwind CSS
+- Git & GitHub
 - Vercel
 
----
+## 👨‍💻 My Role
+
+I designed and developed the frontend application, implementing responsive layouts, reusable components, and modern UI practices to create an engaging shopping experience. I also managed version control using Git/GitHub and deployed the application using Vercel.
 
 ## 🌐 Live Demo
 
 https://riftshop.vercel.app/
 
----
+## 📸 Screenshots
 
-## 📸 Preview
+(Add project screenshots here)
 
+## 🔗 Repository
 
-
----
+https://github.com/njerii-dev/riftshop
 
 ## 👩‍💻 Author
 
