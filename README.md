@@ -27,9 +27,10 @@ I designed and developed the frontend application, implementing responsive layou
 
 https://riftshop.vercel.app/
 
-## 📸 Screenshots
+## <img width="1223" height="605" alt="riftshophomepage" src="https://github.com/user-attachments/assets/62856cbe-d949-4697-8883-91074bc75669" />
 
-(Add project screenshots here)
+
+
 
 ## 🔗 Repository
 
