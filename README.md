@@ -1,5 +1,4 @@
-<img width="435" height="440" alt="Screenshot 2026-09-11 160030" src="https://github.com/user-attachments/assets/e248289b-2a40-4a23-b2ae-b675e53edada" />
-<img width="364" height="605" alt="Screenshot 2026-09-11 155958" src="https://github.com/user-attachments/assets/e9a6035a-27f5-4892-90d6-0bc83121d51b" />
+
 # 🛒 RiftShop
 
 RiftShop is a modern e-commerce web application designed to provide customers with a simple and responsive online shopping experience.
@@ -37,6 +36,13 @@ I also worked on integrating the application's payment workflow, managed source 
 ### Homepage
 
 <img width="1223" height="605" alt="RiftShop Homepage" src="https://github.com/user-attachments/assets/62856cbe-d949-4697-8883-91074bc75669" />
+
+### odering
+<img width="364" height="605" alt="Screenshot 2026-09-11 155958" src="https://github.com/user-attachments/assets/47321a39-cd99-42a4-abd6-d56335ab49c2" />
+
+### Payment
+<img width="435" height="440" alt="Screenshot 2026-09-11 160030" src="https://github.com/user-attachments/assets/51f23b77-8b47-4716-ad7e-cd5a5e8ddabf" />
+
 
 ## 🌐 Live Demo
 
