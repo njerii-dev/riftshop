@@ -1,3 +1,5 @@
+<img width="435" height="440" alt="Screenshot 2026-09-11 160030" src="https://github.com/user-attachments/assets/e248289b-2a40-4a23-b2ae-b675e53edada" />
+<img width="364" height="605" alt="Screenshot 2026-09-11 155958" src="https://github.com/user-attachments/assets/e9a6035a-27f5-4892-90d6-0bc83121d51b" />
 # 🛒 RiftShop
 
 RiftShop is a modern e-commerce web application designed to provide customers with a simple and responsive online shopping experience.
